@@ -6,6 +6,17 @@ __pycache__/
 # C extensions
 *.so
 
+#MAC OS files
+.DS_Store
+.localized
+__MACOSX/
+.AppleDouble
+.LSOverride
+Icon[]
+
+# Resource forks
+._*
+
 # Distribution / packaging
 .Python
 build/
@@ -25,6 +36,33 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+
+# ============================================================
+# Project-specific additions, diabetic retinopathy coursework
+# ============================================================
+
+# Kaggle API credentials, never commit these
+kaggle.json
+
+# Raw and processed dataset images, the dataset lives on Kaggle, not in git
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# The on-disk preprocessing cache the notebook builds on Kaggle
+# (.npy files), multiple GB, entirely regenerable, never commit
+preprocessed_cache/
+*.npy
+
+# Trained model checkpoints, individually under GitHub's 100MB limit but
+# not worth bloating repo history with, host these on Kaggle Models or
+# Google Drive instead and link to them from outputs/models/README.md
+outputs/models/*.pth
+outputs/models/*.pt
+!outputs/models/.gitkeep
+!outputs/models/README.md
 
 # PyInstaller
 #   Usually these files are written by a python script from a template
