@@ -1,0 +1,57 @@
+{
+  "stage": "Experiment 5: Learning Rate (phase_two_learning_rate)",
+  "options_tested": [
+    "lr_1e-04",
+    "lr_3e-05",
+    "lr_3e-04"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "leader_by_mean_val_qwk": "lr_3e-04",
+  "winner": "lr_1e-04",
+  "winner_mean_val_qwk": 0.8799,
+  "reason": "lr_3e-04 led narrowly (0.8826), but lr_1e-04 was within 0.005 (0.8799), so it wins because it is the default starting value.",
+  "summary": [
+    {
+      "option": "lr_1e-04",
+      "mean_val_qwk": 0.8799,
+      "lowest_val_qwk": 0.8784,
+      "highest_val_qwk": 0.8813,
+      "mean_val_macro_f1": 0.6511,
+      "mean_val_accuracy": 0.8124,
+      "mean_train_minus_val_qwk_gap": 0.059,
+      "mean_val_recall_severe": 0.3793,
+      "mean_best_epoch": 10.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 6.8311
+    },
+    {
+      "option": "lr_3e-05",
+      "mean_val_qwk": 0.8712,
+      "lowest_val_qwk": 0.8684,
+      "highest_val_qwk": 0.874,
+      "mean_val_macro_f1": 0.6595,
+      "mean_val_accuracy": 0.8197,
+      "mean_train_minus_val_qwk_gap": 0.043,
+      "mean_val_recall_severe": 0.3793,
+      "mean_best_epoch": 11.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 6.8173
+    },
+    {
+      "option": "lr_3e-04",
+      "mean_val_qwk": 0.8826,
+      "lowest_val_qwk": 0.8766,
+      "highest_val_qwk": 0.8885,
+      "mean_val_macro_f1": 0.6741,
+      "mean_val_accuracy": 0.8106,
+      "mean_train_minus_val_qwk_gap": 0.0357,
+      "mean_val_recall_severe": 0.5517,
+      "mean_best_epoch": 8.0,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.864
+    }
+  ]
+}

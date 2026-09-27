@@ -1,0 +1,7 @@
+test,passed_percent,required_percent,result
+Every method outputs a square colour image of the target size,100.0,100,PASS
+The eye keeps its shape after resizing (distortion under 3%),80.0,100,FAIL
+"Background corners are pure black (resize only, CLAHE)",100.0,100,PASS
+Background corners are neutral grey (Ben Graham),100.0,100,PASS
+CLAHE raises local contrast inside the eye,100.0,90,PASS
+Ben Graham removes the background colour (centre near grey 128),100.0,90,PASS

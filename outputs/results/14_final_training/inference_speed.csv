@@ -1,0 +1,5 @@
+model,gpu_milliseconds_per_photo_in_batches_of_16,cpu_milliseconds_for_one_photo
+efficientnet_b3,6.92,134.7
+efficientnet_b0,3.32,59.4
+resnet50,8.1,172.9
+ensemble (all three),18.34,367.0

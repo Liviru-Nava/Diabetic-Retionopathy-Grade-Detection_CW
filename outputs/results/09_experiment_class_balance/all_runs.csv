@@ -1,0 +1,5 @@
+option,seed,best_val_qwk,best_epoch,train_qwk_at_best_epoch,train_minus_val_qwk_gap,val_macro_f1,val_accuracy,trainable_parameters,minutes,val_recall_no_dr,val_recall_mild,val_recall_moderate,val_recall_severe,val_recall_proliferative_dr
+no_class_weights,42,0.8784,11,0.9455,0.067,0.6552,0.8215,4013953,6.8326,0.9852,0.6,0.8133,0.3103,0.4545
+no_class_weights,7,0.8813,10,0.9322,0.051,0.647,0.8033,4013953,6.8296,0.9779,0.5636,0.7333,0.4483,0.5
+class_weighted_loss,42,0.8832,11,0.9333,0.0501,0.6529,0.8087,4013953,6.8294,0.9779,0.6364,0.7333,0.5517,0.4091
+class_weighted_loss,7,0.8604,4,0.8584,-0.002,0.625,0.7668,4013953,3.6272,0.9483,0.6727,0.6,0.6552,0.4091

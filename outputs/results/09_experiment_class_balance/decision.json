@@ -1,0 +1,43 @@
+{
+  "stage": "Experiment 3: Class Balance",
+  "options_tested": [
+    "no_class_weights",
+    "class_weighted_loss"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "leader_by_mean_val_qwk": "no_class_weights",
+  "winner": "no_class_weights",
+  "winner_mean_val_qwk": 0.8799,
+  "reason": "no_class_weights had the highest average validation QWK (0.8799).",
+  "summary": [
+    {
+      "option": "no_class_weights",
+      "mean_val_qwk": 0.8799,
+      "lowest_val_qwk": 0.8784,
+      "highest_val_qwk": 0.8813,
+      "mean_val_macro_f1": 0.6511,
+      "mean_val_accuracy": 0.8124,
+      "mean_train_minus_val_qwk_gap": 0.059,
+      "mean_val_recall_severe": 0.3793,
+      "mean_best_epoch": 10.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 6.8311
+    },
+    {
+      "option": "class_weighted_loss",
+      "mean_val_qwk": 0.8718,
+      "lowest_val_qwk": 0.8604,
+      "highest_val_qwk": 0.8832,
+      "mean_val_macro_f1": 0.6389,
+      "mean_val_accuracy": 0.7878,
+      "mean_train_minus_val_qwk_gap": 0.024,
+      "mean_val_recall_severe": 0.6034,
+      "mean_best_epoch": 7.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.2283
+    }
+  ]
+}

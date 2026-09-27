@@ -1,0 +1,5 @@
+option,mean_val_qwk,lowest_val_qwk,highest_val_qwk,mean_val_macro_f1,mean_val_accuracy,mean_train_minus_val_qwk_gap,mean_val_recall_severe,mean_best_epoch,trainable_parameters,mean_minutes
+none,0.8614,0.8554,0.8673,0.6591,0.8024,0.0731,0.4828,6.5,4013953,5.2263
+flips_and_rotation,0.8718,0.8604,0.8832,0.6389,0.7878,0.024,0.6034,7.5,4013953,5.2283
+full,0.8741,0.8612,0.8871,0.6616,0.7914,0.0174,0.6897,6.5,4013953,5.3563
+full_with_zoom_out,0.867,0.8536,0.8804,0.6398,0.7842,0.0213,0.5862,7.5,4013953,5.6662

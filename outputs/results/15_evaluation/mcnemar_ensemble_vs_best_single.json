@@ -1,0 +1,8 @@
+{
+  "best_single_model_by_validation_qwk": "resnet50",
+  "ensemble_right_single_model_wrong": 28,
+  "single_model_right_ensemble_wrong": 9,
+  "chi_squared_statistic": 8.7568,
+  "p_value": 0.0031,
+  "significant_at_0_05": true
+}

@@ -1,0 +1,4 @@
+option,mean_val_qwk,lowest_val_qwk,highest_val_qwk,mean_val_macro_f1,mean_val_accuracy,mean_train_minus_val_qwk_gap,mean_val_recall_severe,mean_best_epoch,trainable_parameters,mean_minutes
+resize_only,0.867,0.863,0.8709,0.6579,0.7942,0.0305,0.6379,7.0,4013953,5.6772
+clahe,0.8741,0.8612,0.8871,0.6616,0.7914,0.0174,0.6897,6.5,4013953,5.3563
+ben_graham,0.8719,0.8651,0.8787,0.6464,0.7851,0.0344,0.5862,8.5,4013953,6.0003

@@ -1,0 +1,4 @@
+architecture,total_parameters_with_imagenet_head
+efficientnet_b3,12233232
+efficientnet_b0,5288548
+resnet50,25557032

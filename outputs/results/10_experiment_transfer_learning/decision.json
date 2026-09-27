@@ -1,0 +1,71 @@
+{
+  "stage": "Experiment 4: Transfer Learning and Freezing",
+  "options_tested": [
+    "head_only",
+    "two_phase_partial_unfreeze",
+    "two_phase_full_unfreeze",
+    "full_fine_tune"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "leader_by_mean_val_qwk": "full_fine_tune",
+  "winner": "two_phase_full_unfreeze",
+  "winner_mean_val_qwk": 0.8799,
+  "reason": "full_fine_tune led narrowly (0.8826), but two_phase_full_unfreeze was within 0.005 (0.8799), so it wins because it trains fewer weights, leaving less room to overfit.",
+  "summary": [
+    {
+      "option": "head_only",
+      "mean_val_qwk": 0.7977,
+      "lowest_val_qwk": 0.7963,
+      "highest_val_qwk": 0.7992,
+      "mean_val_macro_f1": 0.5715,
+      "mean_val_accuracy": 0.7687,
+      "mean_train_minus_val_qwk_gap": 0.0025,
+      "mean_val_recall_severe": 0.2759,
+      "mean_best_epoch": 9.5,
+      "trainable_parameters": 6405,
+      "mean_minutes": 2.414
+    },
+    {
+      "option": "two_phase_partial_unfreeze",
+      "mean_val_qwk": 0.8754,
+      "lowest_val_qwk": 0.8743,
+      "highest_val_qwk": 0.8765,
+      "mean_val_macro_f1": 0.658,
+      "mean_val_accuracy": 0.8115,
+      "mean_train_minus_val_qwk_gap": 0.0598,
+      "mean_val_recall_severe": 0.4655,
+      "mean_best_epoch": 10.5,
+      "trainable_parameters": 3948223,
+      "mean_minutes": 4.2369
+    },
+    {
+      "option": "two_phase_full_unfreeze",
+      "mean_val_qwk": 0.8799,
+      "lowest_val_qwk": 0.8784,
+      "highest_val_qwk": 0.8813,
+      "mean_val_macro_f1": 0.6511,
+      "mean_val_accuracy": 0.8124,
+      "mean_train_minus_val_qwk_gap": 0.059,
+      "mean_val_recall_severe": 0.3793,
+      "mean_best_epoch": 10.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 6.8311
+    },
+    {
+      "option": "full_fine_tune",
+      "mean_val_qwk": 0.8826,
+      "lowest_val_qwk": 0.8786,
+      "highest_val_qwk": 0.8866,
+      "mean_val_macro_f1": 0.6887,
+      "mean_val_accuracy": 0.8361,
+      "mean_train_minus_val_qwk_gap": 0.0531,
+      "mean_val_recall_severe": 0.431,
+      "mean_best_epoch": 8.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 7.0198
+    }
+  ]
+}

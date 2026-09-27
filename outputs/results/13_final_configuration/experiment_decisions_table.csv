@@ -1,0 +1,7 @@
+experiment,options_tested,winner,winner_mean_val_qwk,reason
+Experiment 1: Preprocessing Method,"resize_only, clahe, ben_graham",clahe,0.8741,clahe had the highest average validation QWK (0.8741).
+Experiment 2: Augmentation Policy,"none, flips_and_rotation, full, full_with_zoom_out",flips_and_rotation,0.8718,"full led narrowly (0.8741), but flips_and_rotation was within 0.005 (0.8718), so it wins because it changes the photos less."
+Experiment 3: Class Balance,"no_class_weights, class_weighted_loss",no_class_weights,0.8799,no_class_weights had the highest average validation QWK (0.8799).
+Experiment 4: Transfer Learning and Freezing,"head_only, two_phase_partial_unfreeze, two_phase_full_unfreeze, full_fine_tune",two_phase_full_unfreeze,0.8799,"full_fine_tune led narrowly (0.8826), but two_phase_full_unfreeze was within 0.005 (0.8799), so it wins because it trains fewer weights, leaving less room to overfit."
+Experiment 5: Learning Rate (phase_two_learning_rate),"lr_1e-04, lr_3e-05, lr_3e-04",lr_1e-04,0.8799,"lr_3e-04 led narrowly (0.8826), but lr_1e-04 was within 0.005 (0.8799), so it wins because it is the default starting value."
+Experiment 6: Regularisation,"regularised, no_extra_regularisation",regularised,0.8826,regularised had the highest average validation QWK (0.8826).

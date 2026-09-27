@@ -1,0 +1,10 @@
+{
+  "size_used_in_pipeline": 384,
+  "photos_measured": 100,
+  "ssim_at_224": 0.963,
+  "ssim_at_384": 0.9774,
+  "ssim_at_512": 0.9843,
+  "estimated_minutes_three_models_at_384": 62.699999999999996,
+  "time_multiplier_384_to_512": 1.75,
+  "all_models_fit_in_memory_at_512": false
+}

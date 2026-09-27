@@ -1,0 +1,4 @@
+method,minutes,cached_photos,expected_photos
+resize_only,4.3,3662,3662
+clahe,8.5,3662,3662
+ben_graham,4.5,3662,3662

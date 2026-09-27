@@ -1,0 +1,9 @@
+model,screening_question,true_positives,false_negatives,true_negatives,false_positives,sensitivity,specificity,positive_predictive_value,negative_predictive_value,roc_auc
+efficientnet_b3,referable_dr_grade_2_or_above,200,23,306,21,0.8969,0.9358,0.905,0.9301,0.9829
+efficientnet_b3,any_dr_grade_1_or_above,268,11,264,7,0.9606,0.9742,0.9745,0.96,0.9974
+efficientnet_b0,referable_dr_grade_2_or_above,202,21,307,20,0.9058,0.9388,0.9099,0.936,0.9805
+efficientnet_b0,any_dr_grade_1_or_above,273,6,265,6,0.9785,0.9779,0.9785,0.9779,0.998
+resnet50,referable_dr_grade_2_or_above,203,20,300,27,0.9103,0.9174,0.8826,0.9375,0.981
+resnet50,any_dr_grade_1_or_above,272,7,264,7,0.9749,0.9742,0.9749,0.9742,0.9977
+ensemble (soft vote),referable_dr_grade_2_or_above,207,16,308,19,0.9283,0.9419,0.9159,0.9506,0.9851
+ensemble (soft vote),any_dr_grade_1_or_above,273,6,265,6,0.9785,0.9779,0.9785,0.9779,0.9985

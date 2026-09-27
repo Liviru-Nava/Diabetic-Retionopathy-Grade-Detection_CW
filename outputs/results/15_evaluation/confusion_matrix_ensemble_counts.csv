@@ -1,0 +1,6 @@
+,predicted No DR,predicted Mild,predicted Moderate,predicted Severe,predicted Proliferative DR
+true No DR,265,5,1,0,0
+true Mild,4,34,16,0,2
+true Moderate,2,12,129,2,5
+true Severe,0,0,8,9,12
+true Proliferative DR,0,2,13,3,26

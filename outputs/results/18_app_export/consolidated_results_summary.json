@@ -1,0 +1,456 @@
+{
+  "run_metadata": {
+    "run_finished_at": "2026-09-27T07:38",
+    "torch_version": "2.10.0+cu128",
+    "torchvision_version": "0.25.0+cu128",
+    "gpu_name": "Tesla T4",
+    "random_seed": 42
+  },
+  "dataset": {
+    "total_photos": 3662,
+    "imbalance_ratio": 9.4,
+    "split_sizes": {
+      "train": 2563,
+      "validation": 549,
+      "test": 550
+    }
+  },
+  "preprocessing_tests": [
+    {
+      "test": "Every method outputs a square colour image of the target size",
+      "passed_percent": 100.0,
+      "required_percent": 100,
+      "result": "PASS"
+    },
+    {
+      "test": "The eye keeps its shape after resizing (distortion under 3%)",
+      "passed_percent": 80.0,
+      "required_percent": 100,
+      "result": "FAIL"
+    },
+    {
+      "test": "Background corners are pure black (resize only, CLAHE)",
+      "passed_percent": 100.0,
+      "required_percent": 100,
+      "result": "PASS"
+    },
+    {
+      "test": "Background corners are neutral grey (Ben Graham)",
+      "passed_percent": 100.0,
+      "required_percent": 100,
+      "result": "PASS"
+    },
+    {
+      "test": "CLAHE raises local contrast inside the eye",
+      "passed_percent": 100.0,
+      "required_percent": 90,
+      "result": "PASS"
+    },
+    {
+      "test": "Ben Graham removes the background colour (centre near grey 128)",
+      "passed_percent": 100.0,
+      "required_percent": 90,
+      "result": "PASS"
+    }
+  ],
+  "local_contrast_by_method": [
+    {
+      "method": "resize_only",
+      "average_local_contrast": 5.458,
+      "times_resize_only": 1.0
+    },
+    {
+      "method": "clahe",
+      "average_local_contrast": 10.432,
+      "times_resize_only": 1.911
+    },
+    {
+      "method": "ben_graham",
+      "average_local_contrast": 17.729,
+      "times_resize_only": 3.248
+    }
+  ],
+  "image_size_study": {
+    "size_used_in_pipeline": 384,
+    "photos_measured": 100,
+    "ssim_at_224": 0.963,
+    "ssim_at_384": 0.9774,
+    "ssim_at_512": 0.9843,
+    "estimated_minutes_three_models_at_384": 62.699999999999996,
+    "time_multiplier_384_to_512": 1.75,
+    "all_models_fit_in_memory_at_512": false
+  },
+  "experiment_decisions": [
+    {
+      "experiment": "Experiment 1: Preprocessing Method",
+      "options_tested": "resize_only, clahe, ben_graham",
+      "winner": "clahe",
+      "winner_mean_val_qwk": 0.8741,
+      "reason": "clahe had the highest average validation QWK (0.8741)."
+    },
+    {
+      "experiment": "Experiment 2: Augmentation Policy",
+      "options_tested": "none, flips_and_rotation, full, full_with_zoom_out",
+      "winner": "flips_and_rotation",
+      "winner_mean_val_qwk": 0.8718,
+      "reason": "full led narrowly (0.8741), but flips_and_rotation was within 0.005 (0.8718), so it wins because it changes the photos less."
+    },
+    {
+      "experiment": "Experiment 3: Class Balance",
+      "options_tested": "no_class_weights, class_weighted_loss",
+      "winner": "no_class_weights",
+      "winner_mean_val_qwk": 0.8799,
+      "reason": "no_class_weights had the highest average validation QWK (0.8799)."
+    },
+    {
+      "experiment": "Experiment 4: Transfer Learning and Freezing",
+      "options_tested": "head_only, two_phase_partial_unfreeze, two_phase_full_unfreeze, full_fine_tune",
+      "winner": "two_phase_full_unfreeze",
+      "winner_mean_val_qwk": 0.8799,
+      "reason": "full_fine_tune led narrowly (0.8826), but two_phase_full_unfreeze was within 0.005 (0.8799), so it wins because it trains fewer weights, leaving less room to overfit."
+    },
+    {
+      "experiment": "Experiment 5: Learning Rate (phase_two_learning_rate)",
+      "options_tested": "lr_1e-04, lr_3e-05, lr_3e-04",
+      "winner": "lr_1e-04",
+      "winner_mean_val_qwk": 0.8799,
+      "reason": "lr_3e-04 led narrowly (0.8826), but lr_1e-04 was within 0.005 (0.8799), so it wins because it is the default starting value."
+    },
+    {
+      "experiment": "Experiment 6: Regularisation",
+      "options_tested": "regularised, no_extra_regularisation",
+      "winner": "regularised",
+      "winner_mean_val_qwk": 0.8826,
+      "reason": "regularised had the highest average validation QWK (0.8826)."
+    }
+  ],
+  "final_training_recipe": {
+    "preprocessing_method": "clahe",
+    "augmentation_policy": "flips_and_rotation",
+    "use_class_weights": false,
+    "transfer_strategy": "two_phase_full_unfreeze",
+    "phase_one_learning_rate": 0.001,
+    "phase_two_learning_rate": 0.0001,
+    "label_smoothing": 0.1,
+    "weight_decay": 0.01,
+    "head_dropout": 0.4,
+    "phase_two_schedule": "cosine"
+  },
+  "overfitting_gaps": [
+    {
+      "architecture": "efficientnet_b3",
+      "kept_epoch": 12,
+      "epochs_trained": 18,
+      "train_qwk": 0.9412,
+      "val_qwk": 0.8911,
+      "qwk_gap": 0.0501,
+      "train_accuracy": 0.8982,
+      "val_accuracy": 0.8197,
+      "accuracy_gap": 0.0785,
+      "train_loss": 0.6217,
+      "val_loss": 0.7637,
+      "epoch_with_lowest_val_loss": 12
+    },
+    {
+      "architecture": "efficientnet_b0",
+      "kept_epoch": 16,
+      "epochs_trained": 22,
+      "train_qwk": 0.9553,
+      "val_qwk": 0.8865,
+      "qwk_gap": 0.0688,
+      "train_accuracy": 0.929,
+      "val_accuracy": 0.8306,
+      "accuracy_gap": 0.0984,
+      "train_loss": 0.5669,
+      "val_loss": 0.7816,
+      "epoch_with_lowest_val_loss": 12
+    },
+    {
+      "architecture": "resnet50",
+      "kept_epoch": 13,
+      "epochs_trained": 19,
+      "train_qwk": 0.9477,
+      "val_qwk": 0.8967,
+      "qwk_gap": 0.0509,
+      "train_accuracy": 0.9091,
+      "val_accuracy": 0.8361,
+      "accuracy_gap": 0.073,
+      "train_loss": 0.5919,
+      "val_loss": 0.7223,
+      "epoch_with_lowest_val_loss": 13
+    }
+  ],
+  "qwk_detail": [
+    {
+      "model": "efficientnet_b3",
+      "kept_epoch": 12.0,
+      "train_qwk_at_kept_epoch": 0.9412,
+      "best_validation_qwk": 0.8911,
+      "train_minus_validation_gap": 0.0501,
+      "test_qwk": 0.8715,
+      "test_qwk_ci_low": 0.839,
+      "test_qwk_ci_high": 0.8981,
+      "validation_to_test_change": -0.0196
+    },
+    {
+      "model": "efficientnet_b0",
+      "kept_epoch": 16.0,
+      "train_qwk_at_kept_epoch": 0.9553,
+      "best_validation_qwk": 0.8865,
+      "train_minus_validation_gap": 0.0688,
+      "test_qwk": 0.8771,
+      "test_qwk_ci_low": 0.8422,
+      "test_qwk_ci_high": 0.9086,
+      "validation_to_test_change": -0.0094
+    },
+    {
+      "model": "resnet50",
+      "kept_epoch": 13.0,
+      "train_qwk_at_kept_epoch": 0.9477,
+      "best_validation_qwk": 0.8967,
+      "train_minus_validation_gap": 0.0509,
+      "test_qwk": 0.8735,
+      "test_qwk_ci_low": 0.8381,
+      "test_qwk_ci_high": 0.9019,
+      "validation_to_test_change": -0.0232
+    },
+    {
+      "model": "ensemble (soft vote)",
+      "kept_epoch": NaN,
+      "train_qwk_at_kept_epoch": NaN,
+      "best_validation_qwk": NaN,
+      "train_minus_validation_gap": NaN,
+      "test_qwk": 0.8998,
+      "test_qwk_ci_low": 0.8728,
+      "test_qwk_ci_high": 0.9253,
+      "validation_to_test_change": NaN
+    }
+  ],
+  "headline_metrics": {
+    "efficientnet_b3": {
+      "qwk": 0.8715,
+      "accuracy": 0.8055,
+      "macro_precision": 0.6461,
+      "macro_recall": 0.6104,
+      "macro_f1": 0.6226,
+      "weighted_precision": 0.7957,
+      "weighted_recall": 0.8055,
+      "weighted_f1": 0.7987,
+      "qwk_ci_low": 0.839,
+      "qwk_ci_high": 0.8981,
+      "accuracy_ci_low": 0.7745,
+      "accuracy_ci_high": 0.8364,
+      "macro_f1_ci_low": 0.5603,
+      "macro_f1_ci_high": 0.6758
+    },
+    "efficientnet_b0": {
+      "qwk": 0.8771,
+      "accuracy": 0.8218,
+      "macro_precision": 0.6732,
+      "macro_recall": 0.6436,
+      "macro_f1": 0.6498,
+      "weighted_precision": 0.8186,
+      "weighted_recall": 0.8218,
+      "weighted_f1": 0.8178,
+      "qwk_ci_low": 0.8422,
+      "qwk_ci_high": 0.9086,
+      "accuracy_ci_low": 0.7909,
+      "accuracy_ci_high": 0.8527,
+      "macro_f1_ci_low": 0.5933,
+      "macro_f1_ci_high": 0.703
+    },
+    "resnet50": {
+      "qwk": 0.8735,
+      "accuracy": 0.8073,
+      "macro_precision": 0.6428,
+      "macro_recall": 0.6234,
+      "macro_f1": 0.631,
+      "weighted_precision": 0.8006,
+      "weighted_recall": 0.8073,
+      "weighted_f1": 0.8029,
+      "qwk_ci_low": 0.8381,
+      "qwk_ci_high": 0.9019,
+      "accuracy_ci_low": 0.7745,
+      "accuracy_ci_high": 0.8364,
+      "macro_f1_ci_low": 0.5759,
+      "macro_f1_ci_high": 0.6842
+    },
+    "ensemble (soft vote)": {
+      "qwk": 0.8998,
+      "accuracy": 0.8418,
+      "macro_precision": 0.7225,
+      "macro_recall": 0.6693,
+      "macro_f1": 0.6837,
+      "weighted_precision": 0.8379,
+      "weighted_recall": 0.8418,
+      "weighted_f1": 0.8361,
+      "qwk_ci_low": 0.8728,
+      "qwk_ci_high": 0.9253,
+      "accuracy_ci_low": 0.8145,
+      "accuracy_ci_high": 0.8709,
+      "macro_f1_ci_low": 0.6226,
+      "macro_f1_ci_high": 0.7376
+    }
+  },
+  "screening_metrics": [
+    {
+      "model": "efficientnet_b3",
+      "screening_question": "referable_dr_grade_2_or_above",
+      "true_positives": 200,
+      "false_negatives": 23,
+      "true_negatives": 306,
+      "false_positives": 21,
+      "sensitivity": 0.8969,
+      "specificity": 0.9358,
+      "positive_predictive_value": 0.905,
+      "negative_predictive_value": 0.9301,
+      "roc_auc": 0.9829
+    },
+    {
+      "model": "efficientnet_b3",
+      "screening_question": "any_dr_grade_1_or_above",
+      "true_positives": 268,
+      "false_negatives": 11,
+      "true_negatives": 264,
+      "false_positives": 7,
+      "sensitivity": 0.9606,
+      "specificity": 0.9742,
+      "positive_predictive_value": 0.9745,
+      "negative_predictive_value": 0.96,
+      "roc_auc": 0.9974
+    },
+    {
+      "model": "efficientnet_b0",
+      "screening_question": "referable_dr_grade_2_or_above",
+      "true_positives": 202,
+      "false_negatives": 21,
+      "true_negatives": 307,
+      "false_positives": 20,
+      "sensitivity": 0.9058,
+      "specificity": 0.9388,
+      "positive_predictive_value": 0.9099,
+      "negative_predictive_value": 0.936,
+      "roc_auc": 0.9805
+    },
+    {
+      "model": "efficientnet_b0",
+      "screening_question": "any_dr_grade_1_or_above",
+      "true_positives": 273,
+      "false_negatives": 6,
+      "true_negatives": 265,
+      "false_positives": 6,
+      "sensitivity": 0.9785,
+      "specificity": 0.9779,
+      "positive_predictive_value": 0.9785,
+      "negative_predictive_value": 0.9779,
+      "roc_auc": 0.998
+    },
+    {
+      "model": "resnet50",
+      "screening_question": "referable_dr_grade_2_or_above",
+      "true_positives": 203,
+      "false_negatives": 20,
+      "true_negatives": 300,
+      "false_positives": 27,
+      "sensitivity": 0.9103,
+      "specificity": 0.9174,
+      "positive_predictive_value": 0.8826,
+      "negative_predictive_value": 0.9375,
+      "roc_auc": 0.981
+    },
+    {
+      "model": "resnet50",
+      "screening_question": "any_dr_grade_1_or_above",
+      "true_positives": 272,
+      "false_negatives": 7,
+      "true_negatives": 264,
+      "false_positives": 7,
+      "sensitivity": 0.9749,
+      "specificity": 0.9742,
+      "positive_predictive_value": 0.9749,
+      "negative_predictive_value": 0.9742,
+      "roc_auc": 0.9977
+    },
+    {
+      "model": "ensemble (soft vote)",
+      "screening_question": "referable_dr_grade_2_or_above",
+      "true_positives": 207,
+      "false_negatives": 16,
+      "true_negatives": 308,
+      "false_positives": 19,
+      "sensitivity": 0.9283,
+      "specificity": 0.9419,
+      "positive_predictive_value": 0.9159,
+      "negative_predictive_value": 0.9506,
+      "roc_auc": 0.9851
+    },
+    {
+      "model": "ensemble (soft vote)",
+      "screening_question": "any_dr_grade_1_or_above",
+      "true_positives": 273,
+      "false_negatives": 6,
+      "true_negatives": 265,
+      "false_positives": 6,
+      "sensitivity": 0.9785,
+      "specificity": 0.9779,
+      "positive_predictive_value": 0.9785,
+      "negative_predictive_value": 0.9779,
+      "roc_auc": 0.9985
+    }
+  ],
+  "mcnemar_ensemble_vs_best_single": {
+    "best_single_model_by_validation_qwk": "resnet50",
+    "ensemble_right_single_model_wrong": 28,
+    "single_model_right_ensemble_wrong": 9,
+    "chi_squared_statistic": 8.7568,
+    "p_value": 0.0031,
+    "significant_at_0_05": true
+  },
+  "ensemble_decision": {
+    "best_single_model_by_validation": "resnet50",
+    "test_qwk_gain_of_ensemble": 0.0263,
+    "qwk_confidence_intervals_overlap": true,
+    "mcnemar_p_value": 0.0031,
+    "ensemble_accuracy_when_models_agree": 0.881,
+    "ensemble_accuracy_when_models_disagree": 0.636,
+    "cpu_milliseconds_best_single": 172.9,
+    "cpu_milliseconds_ensemble": 367.0,
+    "decision": "use_ensemble_because_it_is_significantly_better"
+  },
+  "error_distance": {
+    "efficientnet_b3": {
+      "exact_grade_percent": 80.5,
+      "one_grade_off_percent": 13.8,
+      "two_or_more_grades_off_percent": 5.6,
+      "share_of_mistakes_one_grade_off_percent": 71.0
+    },
+    "efficientnet_b0": {
+      "exact_grade_percent": 82.2,
+      "one_grade_off_percent": 12.5,
+      "two_or_more_grades_off_percent": 5.3,
+      "share_of_mistakes_one_grade_off_percent": 70.4
+    },
+    "resnet50": {
+      "exact_grade_percent": 80.7,
+      "one_grade_off_percent": 14.2,
+      "two_or_more_grades_off_percent": 5.1,
+      "share_of_mistakes_one_grade_off_percent": 73.6
+    },
+    "ensemble (soft vote)": {
+      "exact_grade_percent": 84.2,
+      "one_grade_off_percent": 11.3,
+      "two_or_more_grades_off_percent": 4.5,
+      "share_of_mistakes_one_grade_off_percent": 71.3
+    }
+  },
+  "confidence_analysis": {
+    "low_confidence_threshold_used_by_app": 0.6,
+    "average_confidence_when_right": 0.825,
+    "average_confidence_when_wrong": 0.6,
+    "share_of_photos_flagged_percent": 19.3,
+    "accuracy_on_flagged_photos": 0.594,
+    "accuracy_on_unflagged_photos": 0.901,
+    "share_of_mistakes_caught_by_confidence_flag_percent": 49.4,
+    "share_of_mistakes_caught_by_confidence_or_disagreement_percent": 52.9
+  }
+}

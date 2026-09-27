@@ -1,0 +1,10 @@
+architecture,trainable_part,trainable_parameters,percent_of_model
+efficientnet_b3,head_only,7685,0.07
+efficientnet_b3,last_half,10540223,98.47
+efficientnet_b3,everything,10703917,100.0
+efficientnet_b0,head_only,6405,0.16
+efficientnet_b0,last_half,3948223,98.36
+efficientnet_b0,everything,4013953,100.0
+resnet50,head_only,10245,0.04
+resnet50,last_half,23292933,99.04
+resnet50,everything,23518277,100.0

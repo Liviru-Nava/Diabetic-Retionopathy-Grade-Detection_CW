@@ -1,0 +1,6 @@
+,full_dataset,train,validation,test
+No DR,0.493,0.493,0.494,0.493
+Mild,0.101,0.101,0.1,0.102
+Moderate,0.273,0.273,0.273,0.273
+Severe,0.053,0.053,0.053,0.053
+Proliferative DR,0.081,0.081,0.08,0.08

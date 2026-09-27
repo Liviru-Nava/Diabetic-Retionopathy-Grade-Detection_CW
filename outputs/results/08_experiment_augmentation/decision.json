@@ -1,0 +1,71 @@
+{
+  "stage": "Experiment 2: Augmentation Policy",
+  "options_tested": [
+    "none",
+    "flips_and_rotation",
+    "full",
+    "full_with_zoom_out"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "leader_by_mean_val_qwk": "full",
+  "winner": "flips_and_rotation",
+  "winner_mean_val_qwk": 0.8718,
+  "reason": "full led narrowly (0.8741), but flips_and_rotation was within 0.005 (0.8718), so it wins because it changes the photos less.",
+  "summary": [
+    {
+      "option": "none",
+      "mean_val_qwk": 0.8614,
+      "lowest_val_qwk": 0.8554,
+      "highest_val_qwk": 0.8673,
+      "mean_val_macro_f1": 0.6591,
+      "mean_val_accuracy": 0.8024,
+      "mean_train_minus_val_qwk_gap": 0.0731,
+      "mean_val_recall_severe": 0.4828,
+      "mean_best_epoch": 6.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.2263
+    },
+    {
+      "option": "flips_and_rotation",
+      "mean_val_qwk": 0.8718,
+      "lowest_val_qwk": 0.8604,
+      "highest_val_qwk": 0.8832,
+      "mean_val_macro_f1": 0.6389,
+      "mean_val_accuracy": 0.7878,
+      "mean_train_minus_val_qwk_gap": 0.024,
+      "mean_val_recall_severe": 0.6034,
+      "mean_best_epoch": 7.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.2283
+    },
+    {
+      "option": "full",
+      "mean_val_qwk": 0.8741,
+      "lowest_val_qwk": 0.8612,
+      "highest_val_qwk": 0.8871,
+      "mean_val_macro_f1": 0.6616,
+      "mean_val_accuracy": 0.7914,
+      "mean_train_minus_val_qwk_gap": 0.0174,
+      "mean_val_recall_severe": 0.6897,
+      "mean_best_epoch": 6.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.3563
+    },
+    {
+      "option": "full_with_zoom_out",
+      "mean_val_qwk": 0.867,
+      "lowest_val_qwk": 0.8536,
+      "highest_val_qwk": 0.8804,
+      "mean_val_macro_f1": 0.6398,
+      "mean_val_accuracy": 0.7842,
+      "mean_train_minus_val_qwk_gap": 0.0213,
+      "mean_val_recall_severe": 0.5862,
+      "mean_best_epoch": 7.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.6662
+    }
+  ]
+}

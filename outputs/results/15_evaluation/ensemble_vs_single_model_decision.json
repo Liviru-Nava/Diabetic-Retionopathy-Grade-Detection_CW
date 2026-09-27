@@ -1,0 +1,11 @@
+{
+  "best_single_model_by_validation": "resnet50",
+  "test_qwk_gain_of_ensemble": 0.0263,
+  "qwk_confidence_intervals_overlap": true,
+  "mcnemar_p_value": 0.0031,
+  "ensemble_accuracy_when_models_agree": 0.881,
+  "ensemble_accuracy_when_models_disagree": 0.636,
+  "cpu_milliseconds_best_single": 172.9,
+  "cpu_milliseconds_ensemble": 367.0,
+  "decision": "use_ensemble_because_it_is_significantly_better"
+}

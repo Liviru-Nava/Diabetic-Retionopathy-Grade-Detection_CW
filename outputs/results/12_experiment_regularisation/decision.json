@@ -1,0 +1,43 @@
+{
+  "stage": "Experiment 6: Regularisation",
+  "options_tested": [
+    "regularised",
+    "no_extra_regularisation"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "leader_by_mean_val_qwk": "regularised",
+  "winner": "regularised",
+  "winner_mean_val_qwk": 0.8826,
+  "reason": "regularised had the highest average validation QWK (0.8826).",
+  "summary": [
+    {
+      "option": "regularised",
+      "mean_val_qwk": 0.8826,
+      "lowest_val_qwk": 0.8824,
+      "highest_val_qwk": 0.8829,
+      "mean_val_macro_f1": 0.6964,
+      "mean_val_accuracy": 0.837,
+      "mean_train_minus_val_qwk_gap": 0.041,
+      "mean_val_recall_severe": 0.4828,
+      "mean_best_epoch": 9.0,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 6.1526
+    },
+    {
+      "option": "no_extra_regularisation",
+      "mean_val_qwk": 0.8799,
+      "lowest_val_qwk": 0.8784,
+      "highest_val_qwk": 0.8813,
+      "mean_val_macro_f1": 0.6511,
+      "mean_val_accuracy": 0.8124,
+      "mean_train_minus_val_qwk_gap": 0.059,
+      "mean_val_recall_severe": 0.3793,
+      "mean_best_epoch": 10.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 6.8311
+    }
+  ]
+}

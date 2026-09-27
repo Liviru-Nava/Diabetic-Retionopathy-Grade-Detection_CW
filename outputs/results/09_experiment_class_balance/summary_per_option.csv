@@ -1,0 +1,3 @@
+option,mean_val_qwk,lowest_val_qwk,highest_val_qwk,mean_val_macro_f1,mean_val_accuracy,mean_train_minus_val_qwk_gap,mean_val_recall_severe,mean_best_epoch,trainable_parameters,mean_minutes
+no_class_weights,0.8799,0.8784,0.8813,0.6511,0.8124,0.059,0.3793,10.5,4013953,6.8311
+class_weighted_loss,0.8718,0.8604,0.8832,0.6389,0.7878,0.024,0.6034,7.5,4013953,5.2283

@@ -1,0 +1,4 @@
+architecture,kept_epoch,epochs_trained,train_qwk,val_qwk,qwk_gap,train_accuracy,val_accuracy,accuracy_gap,train_loss,val_loss,epoch_with_lowest_val_loss
+efficientnet_b3,12,18,0.9412,0.8911,0.0501,0.8982,0.8197,0.0785,0.6217,0.7637,12
+efficientnet_b0,16,22,0.9553,0.8865,0.0688,0.929,0.8306,0.0984,0.5669,0.7816,12
+resnet50,13,19,0.9477,0.8967,0.0509,0.9091,0.8361,0.073,0.5919,0.7223,13

@@ -1,0 +1,4 @@
+architecture,output_shape_test,pretrained_weight_test,freezing_test,single_batch_learning_test,loss_reduction_percent
+efficientnet_b3,PASS,PASS,PASS,PASS,100.0
+efficientnet_b0,PASS,PASS,PASS,PASS,100.0
+resnet50,PASS,PASS,PASS,PASS,100.0

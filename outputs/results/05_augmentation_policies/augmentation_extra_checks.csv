@@ -1,0 +1,3 @@
+check,result
+A horizontal flip gives an exact mirror image,PASS
+Validation and test transform gives the same output every time,PASS

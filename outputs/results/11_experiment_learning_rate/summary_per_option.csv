@@ -1,0 +1,4 @@
+option,mean_val_qwk,lowest_val_qwk,highest_val_qwk,mean_val_macro_f1,mean_val_accuracy,mean_train_minus_val_qwk_gap,mean_val_recall_severe,mean_best_epoch,trainable_parameters,mean_minutes
+lr_1e-04,0.8799,0.8784,0.8813,0.6511,0.8124,0.059,0.3793,10.5,4013953,6.8311
+lr_3e-05,0.8712,0.8684,0.874,0.6595,0.8197,0.043,0.3793,11.5,4013953,6.8173
+lr_3e-04,0.8826,0.8766,0.8885,0.6741,0.8106,0.0357,0.5517,8.0,4013953,5.864

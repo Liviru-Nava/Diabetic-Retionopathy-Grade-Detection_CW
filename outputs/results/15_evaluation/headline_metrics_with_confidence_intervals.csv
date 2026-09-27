@@ -1,0 +1,5 @@
+model,qwk,accuracy,macro_precision,macro_recall,macro_f1,weighted_precision,weighted_recall,weighted_f1,qwk_ci_low,qwk_ci_high,accuracy_ci_low,accuracy_ci_high,macro_f1_ci_low,macro_f1_ci_high
+efficientnet_b3,0.8715,0.8055,0.6461,0.6104,0.6226,0.7957,0.8055,0.7987,0.839,0.8981,0.7745,0.8364,0.5603,0.6758
+efficientnet_b0,0.8771,0.8218,0.6732,0.6436,0.6498,0.8186,0.8218,0.8178,0.8422,0.9086,0.7909,0.8527,0.5933,0.703
+resnet50,0.8735,0.8073,0.6428,0.6234,0.631,0.8006,0.8073,0.8029,0.8381,0.9019,0.7745,0.8364,0.5759,0.6842
+ensemble (soft vote),0.8998,0.8418,0.7225,0.6693,0.6837,0.8379,0.8418,0.8361,0.8728,0.9253,0.8145,0.8709,0.6226,0.7376

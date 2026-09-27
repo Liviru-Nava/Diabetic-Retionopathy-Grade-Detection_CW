@@ -1,0 +1,6 @@
+grade,stage,training_photos,loss_weight
+0,No DR,1263,0.406
+1,Mild,259,1.979
+2,Moderate,699,0.733
+3,Severe,135,3.797
+4,Proliferative DR,207,2.476

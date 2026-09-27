@@ -1,0 +1,5 @@
+policy,size_unchanged,values_are_finite,random_changes_seen,random_changes_expected,result
+none,True,True,False,False,PASS
+flips_and_rotation,True,True,True,True,PASS
+full,True,True,True,True,PASS
+full_with_zoom_out,True,True,True,True,PASS

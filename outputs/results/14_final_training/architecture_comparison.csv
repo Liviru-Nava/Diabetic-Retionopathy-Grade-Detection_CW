@@ -1,0 +1,4 @@
+architecture,total_parameters,trainable_parameters,epochs_trained,kept_epoch,best_validation_qwk,training_minutes
+efficientnet_b3,10703917,10703917,18,12,0.8911,19.0
+efficientnet_b0,4013953,4013953,22,16,0.8865,11.9
+resnet50,23518277,23518277,19,13,0.8967,22.8

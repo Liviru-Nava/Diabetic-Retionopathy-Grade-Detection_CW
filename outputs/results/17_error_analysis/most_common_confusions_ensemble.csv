@@ -1,0 +1,15 @@
+true_grade,predicted_grade,number_of_photos,true_stage,predicted_stage,share_of_all_mistakes_percent,direction
+1,2,16,Mild,Moderate,18.4,over-graded
+4,2,13,Proliferative DR,Moderate,14.9,under-graded
+2,1,12,Moderate,Mild,13.8,under-graded
+3,4,12,Severe,Proliferative DR,13.8,over-graded
+3,2,8,Severe,Moderate,9.2,under-graded
+0,1,5,No DR,Mild,5.7,over-graded
+2,4,5,Moderate,Proliferative DR,5.7,over-graded
+1,0,4,Mild,No DR,4.6,under-graded
+4,3,3,Proliferative DR,Severe,3.4,under-graded
+1,4,2,Mild,Proliferative DR,2.3,over-graded
+2,3,2,Moderate,Severe,2.3,over-graded
+2,0,2,Moderate,No DR,2.3,under-graded
+4,1,2,Proliferative DR,Mild,2.3,under-graded
+0,2,1,No DR,Moderate,1.1,over-graded

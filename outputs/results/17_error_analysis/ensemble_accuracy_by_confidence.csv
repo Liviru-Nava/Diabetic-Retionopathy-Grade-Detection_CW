@@ -1,0 +1,7 @@
+band,photos,accuracy,share_of_test_photos_percent
+under 50%,54,0.481,9.8
+50 to 60%,52,0.712,9.5
+60 to 70%,54,0.63,9.8
+70 to 80%,59,0.763,10.7
+80 to 90%,86,0.907,15.6
+90% or more,245,0.992,44.5

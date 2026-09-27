@@ -1,0 +1,10 @@
+{
+  "low_confidence_threshold_used_by_app": 0.6,
+  "average_confidence_when_right": 0.825,
+  "average_confidence_when_wrong": 0.6,
+  "share_of_photos_flagged_percent": 19.3,
+  "accuracy_on_flagged_photos": 0.594,
+  "accuracy_on_unflagged_photos": 0.901,
+  "share_of_mistakes_caught_by_confidence_flag_percent": 49.4,
+  "share_of_mistakes_caught_by_confidence_or_disagreement_percent": 52.9
+}

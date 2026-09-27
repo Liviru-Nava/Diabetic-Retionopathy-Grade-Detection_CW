@@ -1,0 +1,4 @@
+smoke_test,result,details
+1. Every label has a photo and every photo has a label,PASS,"0 labels without a photo, 0 photos without a label"
+2. Every grade is a whole number from 0 to 4,PASS,"grades found: [0, 1, 2, 3, 4]"
+3. The rarest grade has enough photos to split safely,PASS,"rarest grade has 193 photos, at least 50 needed"

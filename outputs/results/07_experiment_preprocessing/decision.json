@@ -1,0 +1,57 @@
+{
+  "stage": "Experiment 1: Preprocessing Method",
+  "options_tested": [
+    "resize_only",
+    "clahe",
+    "ben_graham"
+  ],
+  "seeds": [
+    42,
+    7
+  ],
+  "leader_by_mean_val_qwk": "clahe",
+  "winner": "clahe",
+  "winner_mean_val_qwk": 0.8741,
+  "reason": "clahe had the highest average validation QWK (0.8741).",
+  "summary": [
+    {
+      "option": "resize_only",
+      "mean_val_qwk": 0.867,
+      "lowest_val_qwk": 0.863,
+      "highest_val_qwk": 0.8709,
+      "mean_val_macro_f1": 0.6579,
+      "mean_val_accuracy": 0.7942,
+      "mean_train_minus_val_qwk_gap": 0.0305,
+      "mean_val_recall_severe": 0.6379,
+      "mean_best_epoch": 7.0,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.6772
+    },
+    {
+      "option": "clahe",
+      "mean_val_qwk": 0.8741,
+      "lowest_val_qwk": 0.8612,
+      "highest_val_qwk": 0.8871,
+      "mean_val_macro_f1": 0.6616,
+      "mean_val_accuracy": 0.7914,
+      "mean_train_minus_val_qwk_gap": 0.0174,
+      "mean_val_recall_severe": 0.6897,
+      "mean_best_epoch": 6.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 5.3563
+    },
+    {
+      "option": "ben_graham",
+      "mean_val_qwk": 0.8719,
+      "lowest_val_qwk": 0.8651,
+      "highest_val_qwk": 0.8787,
+      "mean_val_macro_f1": 0.6464,
+      "mean_val_accuracy": 0.7851,
+      "mean_train_minus_val_qwk_gap": 0.0344,
+      "mean_val_recall_severe": 0.5862,
+      "mean_best_epoch": 8.5,
+      "trainable_parameters": 4013953,
+      "mean_minutes": 6.0003
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+method,average_local_contrast,times_resize_only
+resize_only,5.458,1.0
+clahe,10.432,1.911
+ben_graham,17.729,3.248

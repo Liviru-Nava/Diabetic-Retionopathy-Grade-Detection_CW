@@ -1,0 +1,6 @@
+file_name,true_grade,ensemble_prediction,ensemble_confidence
+demo_grade0_no_dr_d9ad2a0ec026.png,No DR,No DR,0.9445
+demo_grade1_mild_01b3aed3ed4c.png,Mild,Mild,0.6556
+demo_grade2_moderate_89ee1fa16f90.png,Moderate,Moderate,0.4472
+demo_grade3_severe_8b76c3c5cb3e.png,Severe,Severe,0.5751
+demo_grade4_proliferative_dr_3ac3fbfca7d4.png,Proliferative DR,Proliferative DR,0.698

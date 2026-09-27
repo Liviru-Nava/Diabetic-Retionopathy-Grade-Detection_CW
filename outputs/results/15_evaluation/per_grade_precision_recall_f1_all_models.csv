@@ -1,0 +1,21 @@
+model,stage,precision,recall,f1,test_photos
+efficientnet_b3,No DR,0.96,0.974,0.967,271
+efficientnet_b3,Mild,0.537,0.518,0.527,56
+efficientnet_b3,Moderate,0.738,0.807,0.771,150
+efficientnet_b3,Severe,0.471,0.276,0.348,29
+efficientnet_b3,Proliferative DR,0.525,0.477,0.5,44
+efficientnet_b0,No DR,0.978,0.978,0.978,271
+efficientnet_b0,Mild,0.579,0.589,0.584,56
+efficientnet_b0,Moderate,0.766,0.807,0.786,150
+efficientnet_b0,Severe,0.533,0.276,0.364,29
+efficientnet_b0,Proliferative DR,0.51,0.568,0.538,44
+resnet50,No DR,0.974,0.974,0.974,271
+resnet50,Mild,0.531,0.464,0.495,56
+resnet50,Moderate,0.732,0.8,0.764,150
+resnet50,Severe,0.409,0.31,0.353,29
+resnet50,Proliferative DR,0.568,0.568,0.568,44
+ensemble (soft vote),No DR,0.978,0.978,0.978,271
+ensemble (soft vote),Mild,0.642,0.607,0.624,56
+ensemble (soft vote),Moderate,0.772,0.86,0.814,150
+ensemble (soft vote),Severe,0.643,0.31,0.419,29
+ensemble (soft vote),Proliferative DR,0.578,0.591,0.584,44
