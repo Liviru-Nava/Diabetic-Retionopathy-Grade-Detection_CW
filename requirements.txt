@@ -1,15 +1,9 @@
-torch
-torchvision
-torchaudio
+streamlit==1.64.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.10.0
+torchvision==0.25.0
+opencv-python-headless==4.13.0.92
 numpy
 pandas
-matplotlib
-seaborn
-scikit-learn
-scipy
-opencv-python
 Pillow
-jupyterlab
-kaggle
-flask
-weasyprint
+reportlab==4.4.10
