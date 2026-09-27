@@ -64,9 +64,11 @@ outputs/models/*.pt
 !outputs/models/.gitkeep
 !outputs/models/README.md
 
-#Exclude the uploads folder
-static/uploads/
+# Local Python environment
 dr_env/
+
+# Demo fundus photos for the video, never commit dataset images
+demo_images/
 
 # PyInstaller
 #   Usually these files are written by a python script from a template

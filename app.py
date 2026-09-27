@@ -6,6 +6,7 @@ printable report. Photos, patient details and results live only in this browser
 session's memory and are never written to disk.
 """
 
+import base64
 import re
 import secrets
 from datetime import date, datetime
@@ -14,6 +15,8 @@ from html import escape
 import numpy as np
 import pandas as pd
 import streamlit as st
+from pathlib import Path
+from PIL import Image
 
 from dr_inference import (
     ARCHITECTURE_DISPLAY_NAMES,
@@ -25,7 +28,12 @@ from dr_inference import (
 )
 from dr_report_pdf import build_screening_report_pdf
 
-st.set_page_config(page_title="DR Screening Assistant", page_icon="👁️", layout="wide", initial_sidebar_state="expanded")
+APP_NAME = "DRxVision"
+APP_ICON_FILE = Path(__file__).resolve().parent / "assets" / "drxvision_icon_retina.png"
+APP_ICON_IMAGE = Image.open(APP_ICON_FILE)
+APP_ICON_DATA_URI = "data:image/png;base64," + base64.b64encode(APP_ICON_FILE.read_bytes()).decode("ascii")
+
+st.set_page_config(page_title=f"{APP_NAME} | DR screening", page_icon=APP_ICON_IMAGE, layout="wide", initial_sidebar_state="expanded")
 
 CLINIC_NAME = "Diabetic Eye Screening Clinic"
 MAXIMUM_CASES_KEPT_IN_SESSION = 5
@@ -72,6 +80,8 @@ h1, h2, h3, .dr-serif { font-family: 'IBM Plex Serif', Georgia, 'Times New Roman
 .dr-hero { background: linear-gradient(120deg, #16213E 0%, #1E2A6E 45%, #3346A8 100%); color: #FFFFFF; border-radius: 16px;
     padding: 1.6rem 1.9rem; margin-bottom: 1.3rem; display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem;
     box-shadow: 0 8px 28px rgba(30, 42, 110, 0.28); }
+.dr-brand { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.55rem; font-weight: 600; font-size: 1.02rem; letter-spacing: 0.01em; color: rgba(255,255,255,0.92); }
+.dr-brand img { width: 34px; height: 34px; border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
 .dr-hero h1 { color: #FFFFFF; font-size: 1.95rem; margin: 0; font-weight: 600; }
 .dr-hero p { margin: 0.4rem 0 0 0; color: rgba(255,255,255,0.86); max-width: 60ch; }
 .dr-hero-stats { display: flex; gap: 1.6rem; }
@@ -277,7 +287,7 @@ def render_sidebar(configuration):
     with st.sidebar:
         st.markdown(
             f"""<div class="dr-clinic-badge"><div class="dr-clinic-name">{escape(CLINIC_NAME)}</div>
-            <div class="dr-clinic-sub">Retinal screening assistant</div></div>""",
+            <div class="dr-clinic-sub">Screening with {APP_NAME}</div></div>""",
             unsafe_allow_html=True,
         )
         st.markdown("### Patient")
@@ -320,6 +330,7 @@ def render_hero(configuration):
         f"""
         <div class="dr-hero">
             <div>
+                <div class="dr-brand"><img src="{APP_ICON_DATA_URI}" alt="{APP_NAME} logo"><span>{APP_NAME}</span></div>
                 <h1>Diabetic retinopathy screening</h1>
                 <p>Grades a retinal photo on the five-step international scale and shows where the model looked.
                 It supports a clinician's decision and never replaces it.</p>
