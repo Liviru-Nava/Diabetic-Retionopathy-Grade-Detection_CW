@@ -1,0 +1,59 @@
+{
+  "model_version": "aptos2019-ensemble-20260927",
+  "created_on": "2026-09-27T07:38",
+  "dataset": "APTOS 2019 Blindness Detection (Kaggle)",
+  "target_image_size": 384,
+  "preprocessing_method": "clahe",
+  "dark_pixel_brightness_threshold": 7,
+  "clahe_clip_limit": 2.0,
+  "clahe_tile_grid_size": 8,
+  "ben_graham_blur_divisor": 30,
+  "normalisation_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "normalisation_std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "stage_names": [
+    "No DR",
+    "Mild",
+    "Moderate",
+    "Severe",
+    "Proliferative DR"
+  ],
+  "referable_grade_threshold": 2,
+  "low_confidence_threshold": 0.6,
+  "architectures": [
+    {
+      "name": "efficientnet_b3",
+      "weights_file": "efficientnet_b3_fp16.pth"
+    },
+    {
+      "name": "efficientnet_b0",
+      "weights_file": "efficientnet_b0_fp16.pth"
+    },
+    {
+      "name": "resnet50",
+      "weights_file": "resnet50_fp16.pth"
+    }
+  ],
+  "grad_cam_architecture": "resnet50",
+  "ensemble_decision": "use_ensemble_because_it_is_significantly_better",
+  "test_set_performance": {
+    "test_photos": 550,
+    "ensemble_accuracy": 0.8418,
+    "ensemble_qwk": 0.8998,
+    "ensemble_macro_f1": 0.6837,
+    "referable_dr_sensitivity": 0.9283,
+    "referable_dr_specificity": 0.9419,
+    "referable_dr_auc": 0.9851
+  },
+  "training_environment": {
+    "torch": "2.10.0+cu128",
+    "torchvision": "0.25.0+cu128"
+  }
+}
