@@ -9,6 +9,7 @@ font = "sans serif"
 [server]
 maxUploadSize = 20
 enableStaticServing = false
+runOnSave = true
 
 [browser]
 gatherUsageStats = false

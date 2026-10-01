@@ -12,6 +12,7 @@ import secrets
 from datetime import date, datetime
 from html import escape
 
+import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -33,7 +34,7 @@ APP_ICON_FILE = Path(__file__).resolve().parent / "assets" / "drxvision_icon_ret
 APP_ICON_IMAGE = Image.open(APP_ICON_FILE)
 APP_ICON_DATA_URI = "data:image/png;base64," + base64.b64encode(APP_ICON_FILE.read_bytes()).decode("ascii")
 
-st.set_page_config(page_title=f"{APP_NAME} | DR screening", page_icon=APP_ICON_IMAGE, layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title=f"{APP_NAME} | DR screening", page_icon=APP_ICON_IMAGE, layout="wide", initial_sidebar_state="collapsed")
 
 CLINIC_NAME = "Diabetic Eye Screening Clinic"
 MAXIMUM_CASES_KEPT_IN_SESSION = 5
@@ -72,8 +73,10 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], butto
 }
 h1, h2, h3, .dr-serif { font-family: 'IBM Plex Serif', Georgia, 'Times New Roman', serif; letter-spacing: -0.01em; }
 [data-testid="stAppViewContainer"] .block-container { padding-top: 1.6rem; max-width: 1260px; }
-[data-testid="stSidebar"] { background: #FFFFFF; border-right: 1px solid #E3E9EE; }
-[data-testid="stSidebar"] h3 { font-size: 1.02rem; color: #3346A8; margin-top: 0.4rem; }
+/* The side panel is no longer used: patient details and session controls sit on the main screen. */
+[data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stExpandSidebarButton"] { display: none !important; }
+.dr-panel-heading { font-family: 'IBM Plex Serif', Georgia, serif; font-size: 1.05rem; font-weight: 600; color: #16213E; margin-bottom: 0.2rem; }
+.dr-session-note { color: #5A6878; font-size: 0.85rem; line-height: 1.4; }
 .dr-clinic-badge { background: linear-gradient(135deg, #3346A8, #1E2A6E); color: #FFFFFF; border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.6rem; }
 .dr-clinic-badge .dr-clinic-name { font-family: 'IBM Plex Serif', Georgia, serif; font-size: 1.08rem; font-weight: 600; }
 .dr-clinic-badge .dr-clinic-sub { font-size: 0.8rem; opacity: 0.85; margin-top: 0.15rem; }
@@ -231,7 +234,7 @@ def render_landing_sections(configuration):
         """<div class="dr-section-title">How it works</div>
         <div class="dr-empty-steps">
             <div class="dr-empty-step"><div class="dr-step-number">1</div><div class="dr-empty-step-title">Add patient details</div>
-                <div class="dr-empty-step-text">Use the side panel. Every field is optional.</div></div>
+                <div class="dr-empty-step-text">Use the patient panel at the top. Every field is optional.</div></div>
             <div class="dr-empty-step"><div class="dr-step-number">2</div><div class="dr-empty-step-title">Upload and analyse</div>
                 <div class="dr-empty-step-text">Three neural networks grade the photo and their answers are averaged.</div></div>
             <div class="dr-empty-step"><div class="dr-step-number">3</div><div class="dr-empty-step-title">Review and print</div>
@@ -283,27 +286,32 @@ def display_patient_name(patient_details):
     return patient_details["patient_name"] or "Unnamed patient"
 
 
-def render_sidebar(configuration):
-    with st.sidebar:
-        st.markdown(
-            f"""<div class="dr-clinic-badge"><div class="dr-clinic-name">{escape(CLINIC_NAME)}</div>
-            <div class="dr-clinic-sub">Screening with {APP_NAME}</div></div>""",
-            unsafe_allow_html=True,
-        )
-        st.markdown("### Patient")
-        st.text_input("Patient name", key="patient_name", placeholder="Optional")
-        st.date_input("Date of birth", value=None, min_value=date(1900, 1, 1), max_value=date.today(),
-                      key="date_of_birth", format="DD/MM/YYYY", help="Optional. Pick from the calendar.")
-        st.selectbox("Sex", ["Not recorded", "Female", "Male", "Other"], key="sex")
-        st.text_input("Referring doctor", key="referring_clinician", placeholder="Optional")
+def render_patient_and_session_panel(configuration):
+    """Patient details and session controls, shown across the top of the Screening tab.
 
-        st.divider()
-        st.markdown("### This session")
-        st.write(f"{len(st.session_state['case_log'])} of {MAXIMUM_CASES_KEPT_IN_SESSION} recent cases held in memory.")
-        st.caption("Nothing is saved. Photos, patient details and results exist only in this browser tab "
-                   "and disappear when you clear the session or close the tab.")
-        st.button("Clear session", on_click=clear_session_storage, width="stretch")
-        st.caption(f"Model version {configuration['model_version']}")
+    These used to live in the side panel. They are now on the main screen so
+    everything needed for a case is visible in one place. The widget keys are
+    unchanged, so collect_patient_details_snapshot still reads them as before.
+    """
+    with st.container(border=True):
+        st.markdown(f'<div class="dr-panel-heading">Patient details, {escape(CLINIC_NAME)}</div>', unsafe_allow_html=True)
+        name_column, birth_column, sex_column, doctor_column = st.columns([1.4, 1, 0.8, 1.3])
+        name_column.text_input("Patient name", key="patient_name", placeholder="Optional")
+        birth_column.date_input("Date of birth", value=None, min_value=date(1900, 1, 1), max_value=date.today(),
+                                key="date_of_birth", format="DD/MM/YYYY", help="Optional. Pick from the calendar.")
+        sex_column.selectbox("Sex", ["Not recorded", "Female", "Male", "Other"], key="sex")
+        doctor_column.text_input("Referring doctor", key="referring_clinician", placeholder="Optional")
+
+        session_column, button_column = st.columns([4, 1], vertical_alignment="center")
+        with session_column:
+            st.markdown(
+                f'<div class="dr-session-note">{len(st.session_state["case_log"])} of {MAXIMUM_CASES_KEPT_IN_SESSION} recent cases held in memory. '
+                "Nothing is saved: photos, patient details and results exist only in this browser tab and disappear when you clear the session "
+                f"or close the tab. Model version {escape(configuration['model_version'])}.</div>",
+                unsafe_allow_html=True,
+            )
+        with button_column:
+            st.button("Clear session", on_click=clear_session_storage, width="stretch")
 
 
 def collect_patient_details_snapshot():
@@ -535,13 +543,13 @@ def render_case(case_record, configuration):
             original_column.image(analysis["display_images"]["resized"], caption="Cleaned photo the models saw", width="stretch")
             heatmap_column.image(analysis["display_images"]["grad_cam"], caption="Grad-CAM: red areas influenced the grade most", width="stretch")
 
-    preprocessing_tab, breakdown_tab, about_tab = st.tabs(["Preprocessing steps", "Model breakdown", "About this tool"])
-    with preprocessing_tab:
-        render_preprocessing_tab(case_record)
-    with breakdown_tab:
-        render_model_breakdown_tab(case_record, configuration)
+    # The step-by-step preprocessing now has its own top-level tab (Image Preparation),
+    # so the result only keeps these two. The first tab listed is the one shown by default.
+    about_tab, breakdown_tab = st.tabs(["About this tool", "Model breakdown"])
     with about_tab:
         render_about_tab(configuration)
+    with breakdown_tab:
+        render_model_breakdown_tab(case_record, configuration)
     render_report_section(case_record)
 
 
@@ -929,6 +937,178 @@ def render_architecture_page(configuration, loaded_models):
             st.markdown(f"**{term}.** {explanation}")
 
 
+# ---------------------------------------------------------------------------
+# Dataset exploration tab
+# ---------------------------------------------------------------------------
+# These numbers were copied from the notebook outputs (cells 7, 9 and 23), so the
+# app shows the same figures as the report without needing the dataset itself.
+
+DATASET_GRADE_COUNTS = [1805, 370, 999, 193, 295]
+DATASET_SPLIT_COUNTS = {
+    "Training": [1263, 259, 699, 135, 207],
+    "Validation": [271, 55, 150, 29, 44],
+    "Test": [271, 56, 150, 29, 44],
+}
+SAMPLE_PHOTOS_FILE = Path(__file__).resolve().parent / "assets" / "sample_photos_by_grade.jpg"
+
+
+def build_grade_count_chart(stage_names):
+    """Horizontal bar chart of photos per grade, coloured with the same severity colours as the results."""
+    total_photos = sum(DATASET_GRADE_COUNTS)
+    chart_data = pd.DataFrame({
+        "Grade": stage_names,
+        "Photos": DATASET_GRADE_COUNTS,
+        "Share": [count / total_photos for count in DATASET_GRADE_COUNTS],
+    })
+    chart_data["Label"] = chart_data.apply(lambda row: f"{row['Photos']:,} ({row['Share']:.0%})", axis=1)
+    bars = alt.Chart(chart_data).mark_bar(cornerRadiusEnd=4).encode(
+        x=alt.X("Photos:Q", title="Number of photos"),
+        y=alt.Y("Grade:N", sort=stage_names, title=None),
+        color=alt.Color("Grade:N", scale=alt.Scale(domain=stage_names, range=SEVERITY_COLOURS), legend=None),
+        tooltip=["Grade", "Photos", alt.Tooltip("Share:Q", format=".1%")],
+    )
+    labels = bars.mark_text(align="left", dx=5, color="#16213E").encode(text="Label:N", color=alt.value("#16213E"))
+    return (bars + labels).properties(height=220)
+
+
+def render_dataset_tab(configuration):
+    stage_names = configuration["stage_names"]
+    st.markdown('<div class="dr-section-title">The APTOS 2019 dataset at a glance</div>', unsafe_allow_html=True)
+    st.write(
+        "The models learned from the APTOS 2019 Blindness Detection dataset on Kaggle: colour photos of the back of the eye "
+        "taken in Indian eye clinics, each graded 0 to 4 on the international (ICDR) scale by clinicians."
+    )
+    summary_columns = st.columns(4)
+    summary_columns[0].metric("Labelled photos", f"{sum(DATASET_GRADE_COUNTS):,}")
+    summary_columns[1].metric("Grades", "5")
+    summary_columns[2].metric("Biggest to smallest grade", "9.4 : 1")
+    summary_columns[3].metric("Different photo sizes", "17")
+
+    chart_column, text_column = st.columns([1.4, 1], gap="large")
+    with chart_column:
+        st.markdown("**Photos in each grade**")
+        st.altair_chart(build_grade_count_chart(stage_names), width="stretch")
+    with text_column:
+        st.markdown("**What this means**")
+        st.write(
+            "Almost half the photos are healthy eyes, and Severe has only 193. A model could look accurate by mostly "
+            "answering No DR, so the project judged models on quadratic weighted kappa (QWK) and on how well each grade is found, "
+            "not on accuracy alone."
+        )
+        st.write(
+            "Photo sizes range from 474 x 358 to 4288 x 2848 pixels, from different cameras, which is why every upload is "
+            "cleaned and resized the same way before grading (see Image Preparation)."
+        )
+
+    st.markdown("**How the photos were split**")
+    split_table = pd.DataFrame(DATASET_SPLIT_COUNTS, index=stage_names)
+    split_table.loc["Total"] = split_table.sum()
+    st.dataframe(split_table, width="stretch")
+    st.caption(
+        "70% of photos trained the models, 15% (validation) picked the best version and settled every experiment, and 15% (test) "
+        "was used once at the very end. The split is stratified, so every part keeps the same mix of grades."
+    )
+
+    if SAMPLE_PHOTOS_FILE.exists():
+        st.markdown("**Example photos from each grade**")
+        st.image(str(SAMPLE_PHOTOS_FILE), caption="Raw photos before any cleaning (notebook cell 8).", width="stretch")
+
+
+# ---------------------------------------------------------------------------
+# Image Preparation tab: the uploaded photo step by step, and how the steps were chosen
+# ---------------------------------------------------------------------------
+# Experiment and measurement results copied from the notebook (cells 17, 18 to 20 and 39).
+
+PREPROCESSING_EXPERIMENT_RESULTS = [
+    {"Method": "Resize only", "Mean validation QWK": 0.8670, "Lowest seed": 0.8630, "Highest seed": 0.8709, "Severe recall": 0.638},
+    {"Method": "CLAHE", "Mean validation QWK": 0.8741, "Lowest seed": 0.8612, "Highest seed": 0.8871, "Severe recall": 0.690},
+    {"Method": "Ben Graham", "Mean validation QWK": 0.8719, "Lowest seed": 0.8651, "Highest seed": 0.8787, "Severe recall": 0.586},
+]
+LOCAL_CONTRAST_RESULTS = [
+    {"Method": "Resize only", "Local contrast": 5.458},
+    {"Method": "CLAHE", "Local contrast": 10.432},
+    {"Method": "Ben Graham", "Local contrast": 17.729},
+]
+IMAGE_SIZE_RESULTS = [
+    {"Image size": 224, "Detail kept (SSIM)": 0.9630, "Minutes to train all three models": 23.3, "Fits in GPU memory": "Yes"},
+    {"Image size": 320, "Detail kept (SSIM)": 0.9732, "Minutes to train all three models": 47.5, "Fits in GPU memory": "Yes"},
+    {"Image size": 384, "Detail kept (SSIM)": 0.9774, "Minutes to train all three models": 65.2, "Fits in GPU memory": "Yes (chosen)"},
+    {"Image size": 448, "Detail kept (SSIM)": 0.9814, "Minutes to train all three models": 90.7, "Fits in GPU memory": "Yes"},
+    {"Image size": 512, "Detail kept (SSIM)": 0.9843, "Minutes to train all three models": 117.0, "Fits in GPU memory": "No"},
+]
+STEP_REASONS = [
+    ("Crop the black border", "The black space around the eye carries no information and wastes pixels once the photo is shrunk."),
+    ("Pad to a square", "Stretching a widescreen photo into a square would squash the round eye and distort lesion shapes."),
+    ("Circular mask", "Blanks glare, camera text and edges outside the eye, so the model cannot learn from them."),
+    ("CLAHE contrast", "Evens out lighting in small tiles on the brightness channel only, so tiny red dots stand out without changing colours."),
+    ("Resize to 384", "Every model needs one fixed input size, and 384 keeps almost all the detail at a manageable training cost."),
+]
+
+
+def build_method_comparison_chart():
+    """Each method's mean validation QWK as a dot, with a line from its lowest to highest seed. CLAHE is highlighted."""
+    chart_data = pd.DataFrame(PREPROCESSING_EXPERIMENT_RESULTS)
+    colour = alt.condition(alt.datum.Method == "CLAHE", alt.value("#3346A8"), alt.value("#9AA8C7"))
+    seed_range = alt.Chart(chart_data).mark_rule(strokeWidth=3).encode(
+        x=alt.X("Lowest seed:Q", title="Validation QWK (dot = mean of 2 seeds)", scale=alt.Scale(zero=False)),
+        x2="Highest seed:Q", y=alt.Y("Method:N", title=None), color=colour,
+    )
+    mean_dot = alt.Chart(chart_data).mark_circle(size=160, opacity=1).encode(
+        x="Mean validation QWK:Q", y="Method:N", color=colour,
+        tooltip=["Method", alt.Tooltip("Mean validation QWK:Q", format=".4f"), "Lowest seed", "Highest seed", "Severe recall"],
+    )
+    return (seed_range + mean_dot).properties(height=170)
+
+
+def build_local_contrast_chart():
+    chart_data = pd.DataFrame(LOCAL_CONTRAST_RESULTS)
+    return alt.Chart(chart_data).mark_bar(cornerRadiusEnd=4).encode(
+        x=alt.X("Local contrast:Q", title="Average local contrast inside the eye"),
+        y=alt.Y("Method:N", title=None, sort=[row["Method"] for row in LOCAL_CONTRAST_RESULTS]),
+        color=alt.condition(alt.datum.Method == "CLAHE", alt.value("#3346A8"), alt.value("#9AA8C7")),
+        tooltip=["Method", alt.Tooltip("Local contrast:Q", format=".2f")],
+    ).properties(height=170)
+
+
+def render_image_preparation_tab(active_case):
+    st.markdown('<div class="dr-section-title">Your photo, step by step</div>', unsafe_allow_html=True)
+    if active_case is None:
+        st.info("Analyse a photo on the Screening tab and every preparation step for it will appear here.")
+    else:
+        st.caption(f"Showing {active_case['file_name']} for {display_patient_name(active_case['patient_details'])}, report {active_case['report_id']}.")
+        render_preprocessing_tab(active_case)
+
+    st.markdown('<div class="dr-section-title">Why each step is there</div>', unsafe_allow_html=True)
+    for step_title, step_reason in STEP_REASONS:
+        st.markdown(f"**{step_title}.** {step_reason}")
+
+    st.markdown('<div class="dr-section-title">How the contrast method was decided</div>', unsafe_allow_html=True)
+    st.write(
+        "Three ways of enhancing the photo were compared under the same training recipe, with two random seeds each "
+        "(EfficientNet-B0, notebook experiment 1). The one that graded best on the validation photos was kept."
+    )
+    experiment_column, contrast_column = st.columns(2, gap="large")
+    with experiment_column:
+        st.markdown("**Grading quality on validation photos**")
+        st.altair_chart(build_method_comparison_chart(), width="stretch")
+    with contrast_column:
+        st.markdown("**How much each method sharpens small details**")
+        st.altair_chart(build_local_contrast_chart(), width="stretch")
+    st.write(
+        "CLAHE had the highest average validation QWK (0.874), the best recall on the rare Severe grade (0.69) and the smallest gap "
+        "between training and validation scores. Ben Graham sharpened details the most but graded slightly worse, which shows "
+        "that more contrast alone does not mean better grading."
+    )
+
+    st.markdown('<div class="dr-section-title">How the image size was decided</div>', unsafe_allow_html=True)
+    st.dataframe(pd.DataFrame(IMAGE_SIZE_RESULTS), hide_index=True, width="stretch")
+    st.caption(
+        "Detail kept is the structural similarity (SSIM) to a 1000 pixel original, where 1.0 means nothing was lost. "
+        "384 keeps 97.7% of the structure. Going to 512 adds very little, makes training about 1.8 times slower and no longer fits "
+        "all three models in the Kaggle T4 GPU's memory."
+    )
+
+
 def main():
     initialise_session_storage()
     st.markdown(INTERFACE_STYLES, unsafe_allow_html=True)
@@ -938,10 +1118,11 @@ def main():
         st.error(f"The models could not be loaded. {loading_error}")
         st.stop()
 
-    render_sidebar(configuration)
     render_hero(configuration)
-    screening_tab, architecture_tab = st.tabs(["Screening", "How the model works"])
+    screening_tab, dataset_tab, preparation_tab, architecture_tab = st.tabs(
+        ["Screening", "Dataset exploration", "Image Preparation", "How the model works"])
     with screening_tab:
+        render_patient_and_session_panel(configuration)
         render_upload_area(configuration, loaded_models)
         render_session_history()
         active_case = find_case_by_id(st.session_state.get("active_case_id"))
@@ -950,6 +1131,11 @@ def main():
             render_case(active_case, configuration)
         else:
             render_landing_sections(configuration)
+    with dataset_tab:
+        render_dataset_tab(configuration)
+    with preparation_tab:
+        # Tabs run top to bottom, so this reads the case after Screening may have just added one.
+        render_image_preparation_tab(find_case_by_id(st.session_state.get("active_case_id")))
     with architecture_tab:
         render_architecture_page(configuration, loaded_models)
 
