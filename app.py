@@ -9,10 +9,12 @@ session's memory and are never written to disk.
 import base64
 import re
 import secrets
+import zlib
 from datetime import date, datetime
 from html import escape
 
 import altair as alt
+import cv2
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -455,7 +457,7 @@ def render_preprocessing_tab(case_record):
     st.caption(f"Uploaded size {image_width} x {image_height} pixels. Preview images are scaled down for display.")
 
 
-def render_model_breakdown_tab(case_record, configuration):
+def render_model_breakdown_section(case_record, configuration):
     analysis = case_record["analysis"]
     stage_names = configuration["stage_names"]
     breakdown_rows = []
@@ -483,17 +485,18 @@ def render_model_breakdown_tab(case_record, configuration):
     )
 
 
-def render_about_tab(configuration):
+def render_about_content(configuration):
+    """Shown inside the About pop-up at the top left of the page."""
     test_performance = configuration.get("test_set_performance", {})
-    performance_columns = st.columns(4)
     performance_items = [
         ("Agreement with graders (QWK)", test_performance.get("ensemble_qwk"), "{:.2f}"),
         ("Exact grade accuracy", test_performance.get("ensemble_accuracy"), "{:.0%}"),
         ("Referable cases caught", test_performance.get("referable_dr_sensitivity"), "{:.0%}"),
         ("Non-referable correctly cleared", test_performance.get("referable_dr_specificity"), "{:.0%}"),
     ]
-    for performance_column, (metric_label, metric_value, metric_format) in zip(performance_columns, performance_items):
-        performance_column.metric(metric_label, metric_format.format(metric_value) if metric_value is not None else "Not available")
+    for first_item_index in (0, 2):
+        for performance_column, (metric_label, metric_value, metric_format) in zip(st.columns(2), performance_items[first_item_index:first_item_index + 2]):
+            performance_column.metric(metric_label, metric_format.format(metric_value) if metric_value is not None else "Not available")
     st.caption(f"Measured once on {test_performance.get('test_photos', 'held-out')} test photos that the models never saw during training.")
     st.markdown(
         """
@@ -543,13 +546,10 @@ def render_case(case_record, configuration):
             original_column.image(analysis["display_images"]["resized"], caption="Cleaned photo the models saw", width="stretch")
             heatmap_column.image(analysis["display_images"]["grad_cam"], caption="Grad-CAM: red areas influenced the grade most", width="stretch")
 
-    # The step-by-step preprocessing now has its own top-level tab (Image Preparation),
-    # so the result only keeps these two. The first tab listed is the one shown by default.
-    about_tab, breakdown_tab = st.tabs(["About this tool", "Model breakdown"])
-    with about_tab:
-        render_about_tab(configuration)
-    with breakdown_tab:
-        render_model_breakdown_tab(case_record, configuration)
+    # Preprocessing has its own top-level tab (Image Preparation) and "About this tool" is a pop-up at the top
+    # left of the page, so the result ends with one Model breakdown section and then the printable report.
+    st.markdown('<div class="dr-section-title">Model breakdown</div>', unsafe_allow_html=True)
+    render_model_breakdown_section(case_record, configuration)
     render_report_section(case_record)
 
 
@@ -827,17 +827,170 @@ def build_training_timeline_markup():
     return f'<div class="dr-timeline">{"".join(rows)}{legend}</div>'
 
 
+# ---------------------------------------------------------------------------
+# How the model works tab: CNN architecture and training strategy, in summary
+# ---------------------------------------------------------------------------
+# Epoch-by-epoch numbers copied from the training logs printed in notebook cells 46 to 48.
+# Each row is (epoch, training loss, validation loss, training accuracy, validation accuracy).
+# A few mid-run epochs were not in the printed log, so the lines run straight across those gaps.
+TRAINING_HISTORY = {
+    "efficientnet_b3": [
+        (1, 1.1214, 1.0212, 0.6512, 0.7086),
+        (2, 0.9657, 0.9593, 0.7175, 0.725),
+        (6, 0.8571, 0.8177, 0.7764, 0.7687),
+        (7, 0.7737, 0.7831, 0.8158, 0.7905),
+        (8, 0.7384, 0.7832, 0.8373, 0.8069),
+        (9, 0.7152, 0.7696, 0.8416, 0.816),
+        (10, 0.6753, 0.7888, 0.865, 0.7887),
+        (11, 0.6557, 0.7716, 0.8798, 0.8051),
+        (12, 0.6217, 0.7637, 0.8982, 0.8197),
+        (13, 0.5957, 0.772, 0.9103, 0.8142),
+        (14, 0.5789, 0.7736, 0.9208, 0.8179),
+        (15, 0.5577, 0.774, 0.9309, 0.8215),
+        (16, 0.5489, 0.7793, 0.936, 0.8197),
+        (17, 0.5297, 0.7778, 0.9446, 0.8288),
+        (18, 0.5169, 0.7905, 0.9532, 0.8106),
+    ],
+    "efficientnet_b0": [
+        (1, 1.1068, 0.9837, 0.6551, 0.7213),
+        (2, 0.9724, 0.9335, 0.7136, 0.7286),
+        (3, 0.9323, 0.9211, 0.7382, 0.745),
+        (4, 0.9159, 0.9104, 0.7347, 0.745),
+        (5, 0.9207, 0.9168, 0.7405, 0.7596),
+        (6, 0.8569, 0.8345, 0.7706, 0.7887),
+        (7, 0.7923, 0.8107, 0.8049, 0.796),
+        (8, 0.7366, 0.8107, 0.8357, 0.7978),
+        (9, 0.7018, 0.7787, 0.8607, 0.8106),
+        (10, 0.6682, 0.7891, 0.8677, 0.8051),
+        (11, 0.656, 0.7684, 0.8712, 0.827),
+        (12, 0.6383, 0.7661, 0.8814, 0.8179),
+        (13, 0.6177, 0.7669, 0.8982, 0.8342),
+        (16, 0.5669, 0.7816, 0.929, 0.8306),
+        (17, 0.5507, 0.8265, 0.9352, 0.8179),
+        (18, 0.5387, 0.8095, 0.9368, 0.816),
+        (19, 0.533, 0.8053, 0.9458, 0.8215),
+        (20, 0.5228, 0.7973, 0.9501, 0.816),
+        (21, 0.5165, 0.8065, 0.9559, 0.8233),
+        (22, 0.5105, 0.8077, 0.9571, 0.8142),
+    ],
+    "resnet50": [
+        (1, 1.1064, 1.0448, 0.6621, 0.6958),
+        (2, 0.9584, 0.9719, 0.7195, 0.7359),
+        (3, 0.9132, 0.9372, 0.7452, 0.745),
+        (4, 0.8848, 0.9234, 0.7577, 0.7505),
+        (5, 0.8731, 0.9099, 0.7702, 0.7486),
+        (6, 0.8155, 0.8312, 0.7983, 0.7723),
+        (7, 0.7546, 0.7818, 0.8338, 0.8233),
+        (8, 0.7219, 0.7958, 0.8478, 0.7978),
+        (9, 0.6888, 0.729, 0.8584, 0.8215),
+        (10, 0.6553, 0.7478, 0.8783, 0.8051),
+        (11, 0.6384, 0.7395, 0.8841, 0.8106),
+        (12, 0.6051, 0.7897, 0.9021, 0.8051),
+        (13, 0.5919, 0.7223, 0.9091, 0.8361),
+        (14, 0.5688, 0.7636, 0.9227, 0.827),
+        (15, 0.5518, 0.7824, 0.9348, 0.8251),
+        (16, 0.5339, 0.7919, 0.9423, 0.8051),
+        (19, 0.492, 0.7755, 0.9641, 0.8288),
+    ],
+}
+
+NETWORK_ROLES = {
+    "efficientnet_b3": "The larger EfficientNet. It scales depth, width and input size together, so it gets strong accuracy from relatively few weights.",
+    "efficientnet_b0": "The smallest and fastest. With only 2,563 training photos, fewer weights leaves less room to memorise them.",
+    "resnet50": "A different design built on shortcut connections, so it makes different mistakes from the EfficientNets, which is what makes voting worthwhile. "
+                "It was the best single model on validation, so it also draws the heat map.",
+}
+# Test-set scores (notebook cells 53 and 54) and CPU time for one photo (cell 52).
+TEST_OUTCOMES = {"efficientnet_b3": (0.8715, 0.8055), "efficientnet_b0": (0.8771, 0.8218), "resnet50": (0.8735, 0.8073)}
+CPU_MILLISECONDS_PER_PHOTO = {"efficientnet_b3": 124.5, "efficientnet_b0": 62.5, "resnet50": 180.4, "ensemble": 367.4}
+
+# The six controlled experiments (notebook cells 39 to 45): what was tested, what won and why.
+TRAINING_DECISIONS = [
+    {"Decision": "1. Preprocessing", "Options tested": "Resize only, CLAHE, Ben Graham", "Winner": "CLAHE", "Validation QWK": 0.8741,
+     "Why it won": "Best validation QWK and the best Severe recall."},
+    {"Decision": "2. Augmentation", "Options tested": "None, flips + rotation, full, full + zoom out", "Winner": "Flips + rotation", "Validation QWK": 0.8718,
+     "Why it won": "Within 0.005 of the full policy, so the lighter one won."},
+    {"Decision": "3. Class balance", "Options tested": "Plain loss, class-weighted loss", "Winner": "Plain loss", "Validation QWK": 0.8799,
+     "Why it won": "Higher validation QWK."},
+    {"Decision": "4. Freezing", "Options tested": "Head only, last half, all layers in two phases, all layers from the start", "Winner": "Two phases, unfreeze all",
+     "Validation QWK": 0.8799, "Why it won": "Within 0.005 of fine-tuning everything at once, but trains fewer weights early."},
+    {"Decision": "5. Learning rate", "Options tested": "3e-5, 1e-4, 3e-4 for phase 2", "Winner": "1e-4", "Validation QWK": 0.8799,
+     "Why it won": "Within 0.005 of 3e-4, so the default value won."},
+    {"Decision": "6. Regularisation", "Options tested": "None, or label smoothing + weight decay + dropout + cosine schedule", "Winner": "Regularised",
+     "Validation QWK": 0.8826, "Why it won": "Highest QWK and a smaller train to validation gap."},
+]
+FREEZING_EXPERIMENT_RESULTS = [
+    {"Strategy": "Head only (rest frozen)", "Mean validation QWK": 0.7977, "Lowest seed": 0.7963, "Highest seed": 0.7992, "Severe recall": 0.276},
+    {"Strategy": "Two phases, unfreeze last half", "Mean validation QWK": 0.8754, "Lowest seed": 0.8743, "Highest seed": 0.8765, "Severe recall": 0.466},
+    {"Strategy": "Two phases, unfreeze all", "Mean validation QWK": 0.8799, "Lowest seed": 0.8784, "Highest seed": 0.8813, "Severe recall": 0.379},
+    {"Strategy": "Fine-tune all from the start", "Mean validation QWK": 0.8826, "Lowest seed": 0.8786, "Highest seed": 0.8866, "Severe recall": 0.431},
+]
+
+
+def build_training_curve_chart(architecture_name, measure_name):
+    """Training vs validation for one network. The grey band is phase 1 (only the new head learning)
+    and the dashed line is the epoch that was kept, chosen by best validation QWK."""
+    column_index = 1 if measure_name == "Loss" else 3
+    curve_rows = []
+    for record in TRAINING_HISTORY[architecture_name]:
+        curve_rows.append({"Epoch": record[0], "Set": "Training", measure_name: record[column_index]})
+        curve_rows.append({"Epoch": record[0], "Set": "Validation", measure_name: record[column_index + 1]})
+    curve_data = pd.DataFrame(curve_rows)
+    last_epoch = int(curve_data["Epoch"].max())
+    kept_epoch = TRAINING_RUNS[architecture_name]["kept_epoch"]
+    phase_one_band = alt.Chart(pd.DataFrame({"start": [0.5], "end": [PHASE_ONE_EPOCHS + 0.5]})).mark_rect(color="#E9ECF0", opacity=0.9).encode(x=alt.X("start:Q", title="Epoch"), x2="end:Q")
+    curves = alt.Chart(curve_data).mark_line(point=True, strokeWidth=2.5).encode(
+        x=alt.X("Epoch:Q", title="Epoch", scale=alt.Scale(domain=[0.5, last_epoch + 0.5]), axis=alt.Axis(tickMinStep=1)),
+        y=alt.Y(f"{measure_name}:Q", scale=alt.Scale(zero=False)),
+        color=alt.Color("Set:N", scale=alt.Scale(domain=["Training", "Validation"], range=["#3346A8", "#E07A2F"]), legend=alt.Legend(title=None, orient="top")),
+        tooltip=["Epoch", "Set", alt.Tooltip(f"{measure_name}:Q", format=".3f")],
+    )
+    kept_line = alt.Chart(pd.DataFrame({"Epoch": [kept_epoch]})).mark_rule(strokeDash=[5, 3], color="#16213E", strokeWidth=2).encode(x=alt.X("Epoch:Q", title="Epoch"))
+    return (phase_one_band + curves + kept_line).properties(height=240)
+
+
+def build_outcome_table(architecture_summaries, test_performance):
+    outcome_rows = []
+    for architecture_name, run in TRAINING_RUNS.items():
+        outcome_rows.append({
+            "Model": ARCHITECTURE_DISPLAY_NAMES.get(architecture_name, architecture_name),
+            "Learned weights": f"{architecture_summaries[architecture_name]['total_parameters'] / 1e6:.1f} M",
+            "Best validation QWK": f"{run['best_validation_qwk']:.3f}",
+            "Test QWK": f"{TEST_OUTCOMES[architecture_name][0]:.3f}",
+            "Test accuracy": f"{TEST_OUTCOMES[architecture_name][1]:.1%}",
+            "CPU time per photo": f"{CPU_MILLISECONDS_PER_PHOTO[architecture_name]:.0f} ms",
+        })
+    outcome_rows.append({
+        "Model": "Ensemble (average of all three)", "Learned weights": "all three", "Best validation QWK": "not applicable",
+        "Test QWK": f"{test_performance.get('ensemble_qwk', 0):.3f}", "Test accuracy": f"{test_performance.get('ensemble_accuracy', 0):.1%}",
+        "CPU time per photo": f"{CPU_MILLISECONDS_PER_PHOTO['ensemble']:.0f} ms",
+    })
+    return pd.DataFrame(outcome_rows)
+
+
 def render_architecture_page(configuration, loaded_models):
     image_size = configuration["target_image_size"]
     architecture_summaries = load_architecture_summaries(loaded_models, image_size)
     active_case = find_case_by_id(st.session_state.get("active_case_id"))
     grad_cam_name = ARCHITECTURE_DISPLAY_NAMES.get(configuration["grad_cam_architecture"], configuration["grad_cam_architecture"])
+    test_performance = configuration.get("test_set_performance", {})
 
-    st.markdown('<div class="dr-section-title">How each neural network reads a photo</div>', unsafe_allow_html=True)
+    # ---- Part 1: the CNN architecture -------------------------------------------------------
+    st.markdown('<div class="dr-section-title">1. The CNN architecture</div>', unsafe_allow_html=True)
     st.write(
-        "Each model is a convolutional neural network (CNN). The left part finds patterns in the photo, starting with simple edges "
-        "and building up to whole-eye patterns, while the feature maps get smaller but more numerous. The right part turns those "
-        "patterns into a probability for each grade. Pick a model, then switch the view to see what was trained in each phase."
+        "Three convolutional neural networks (CNNs), each pretrained on ImageNet, read every photo. The left part of each network finds patterns, "
+        "starting with simple edges and building up to whole-eye patterns, while the feature maps get smaller but more numerous. The right part turns "
+        "those patterns into a probability for each grade, and the app averages the three answers (soft voting)."
+    )
+    chips = "".join(
+        f'<span class="dr-ensemble-chip" style="background:{ARCHITECTURE_COLOURS.get(name, "#3346A8")}">{escape(ARCHITECTURE_DISPLAY_NAMES.get(name, name))}</span>'
+        + ('<span class="dr-ensemble-sign">+</span>' if position < len(architecture_summaries) - 1 else "")
+        for position, name in enumerate(architecture_summaries)
+    )
+    st.markdown(
+        f'<div class="dr-ensemble-strip">{chips}<span class="dr-ensemble-sign">average</span>'
+        f'<span class="dr-ensemble-result">Final grade and confidence</span></div>',
+        unsafe_allow_html=True,
     )
     model_column, view_column = st.columns([1, 1.3])
     with model_column:
@@ -860,19 +1013,37 @@ def render_architecture_page(configuration, loaded_models):
         st.image(diagram_svg, width="stretch")
     view_explanations = {
         "structure": "Each stack is a set of feature maps: more sheets means more patterns, a smaller square means a coarser view.",
-        "phase_1": ("Grey means frozen: the ImageNet weights were locked and not changed. Orange means learning. "
-                    "Only the new classifier learned in phase 1, so its random starting weights could not damage the pretrained layers."),
-        "phase_2": ("Everything is orange: every layer was unlocked and adjusted, but with a learning rate 10 times smaller than in phase 1, "
-                    "so the pretrained knowledge was refined for eye photos rather than overwritten."),
+        "phase_1": "Grey means frozen: the ImageNet weights were locked. Orange means learning. Only the new classifier learned in phase 1.",
+        "phase_2": "Everything is orange: every layer was unlocked, with a learning rate 10 times smaller than in phase 1, so the pretrained knowledge was refined, not overwritten.",
     }
     st.caption(
         ("Showing the photo you analysed and this model's own answer for it. " if active_case else "")
-        + f"The network never sees the raw upload: every photo is preprocessed to {image_size} x {image_size} pixels with 3 colour channels first. "
-        + view_explanations[training_view]
-        + f" {chosen_summary['total_parameters']:,} learned weights in total."
+        + f"Every photo is preprocessed to {image_size} x {image_size} pixels with 3 colour channels before it reaches the network. "
+        + view_explanations[training_view] + f" {chosen_summary['total_parameters']:,} learned weights in total."
     )
+    network_rows = [{
+        "Network": ARCHITECTURE_DISPLAY_NAMES.get(name, name),
+        "Learned weights": f"{summary['total_parameters'] / 1e6:.1f} M",
+        "Why it is in the ensemble": NETWORK_ROLES[name],
+    } for name, summary in architecture_summaries.items()]
+    st.dataframe(pd.DataFrame(network_rows), hide_index=True, width="stretch")
+    with st.expander("Layer by layer for the selected network, in plain words"):
+        st.write(ARCHITECTURE_DESCRIPTIONS.get(chosen_architecture, ""))
+        st.dataframe(build_plain_stage_table(chosen_architecture, chosen_summary), hide_index=True, width="stretch")
+        st.caption("Early layers pick up edges, deeper layers combine them into larger structures. This is the typical pattern for CNNs.")
+    with st.expander("What do these terms mean?"):
+        for term, explanation in GLOSSARY_ITEMS + [
+            ("Epoch", "One full pass through all the training photos."),
+            ("Learning rate", "How big a step the weights take each time they are adjusted. Smaller steps change a network more carefully."),
+            ("Frozen layer", "A layer whose weights are locked, so training does not change it."),
+            ("Fine-tuning", "Continuing to train a pretrained network on new data, usually with a small learning rate."),
+            ("QWK", "Quadratic weighted kappa: agreement with the graders, where far-off mistakes cost much more than near misses. 1.0 is perfect."),
+        ]:
+            st.markdown(f"**{term}.** {explanation}")
 
-    st.markdown('<div class="dr-section-title">How transfer learning was done</div>', unsafe_allow_html=True)
+    # ---- Part 2: the training strategy -------------------------------------------------------
+    st.markdown('<div class="dr-section-title">2. The training strategy</div>', unsafe_allow_html=True)
+    st.markdown("**How transfer learning was done**")
     step_classes = ["", "", " dr-tl-phase-one", " dr-tl-phase-two"]
     st.markdown(
         '<div class="dr-tl-steps">' + "".join(
@@ -882,20 +1053,45 @@ def render_architecture_page(configuration, loaded_models):
         ) + "</div>",
         unsafe_allow_html=True,
     )
-    st.caption(
-        "Why two phases? In the freezing experiment, training only the head reached a validation QWK of 0.798, "
-        "while unlocking the whole network in phase 2 reached 0.880. The pretrained features had to adapt to retinal lesions."
-    )
 
-    st.markdown('<div class="dr-section-title">How long each network trained</div>', unsafe_allow_html=True)
+    st.markdown("**What was tested, and what won**")
+    st.caption("Six controlled experiments (26 training runs, two random seeds each, EfficientNet-B0 on a short schedule). If two options were within 0.005 validation QWK, the simpler one won.")
+    st.dataframe(pd.DataFrame(TRAINING_DECISIONS), hide_index=True, width="stretch",
+                 column_config={"Validation QWK": st.column_config.NumberColumn(format="%.4f")})
+    freezing_chart_column, freezing_text_column = st.columns([1.3, 1], gap="large")
+    with freezing_chart_column:
+        st.markdown("**Experiment 4: how much of the network should learn?**")
+        st.altair_chart(build_option_comparison_chart(FREEZING_EXPERIMENT_RESULTS, "Strategy", "Two phases, unfreeze all"), width="stretch")
+    with freezing_text_column:
+        st.markdown("**What this shows**")
+        st.write(
+            "Training only the new head reached a validation QWK of 0.798. Unlocking the whole network in phase 2 reached 0.880. "
+            "ImageNet features alone are not enough for retinal lesions: the pretrained layers had to adapt to them."
+        )
+
+    st.markdown("**How each network trained**")
     st.markdown(build_training_timeline_markup(), unsafe_allow_html=True)
     st.caption(
-        "Each bar is one training run, measured in epochs (full passes through the 2,563 training photos). "
-        "The black line marks the epoch that scored best on the validation photos, which is the version the app uses. "
-        "Training stopped automatically once 6 epochs passed without improvement."
+        "Each bar is one training run, measured in epochs (full passes through the 2,563 training photos). The black line marks the epoch that scored "
+        "best on the validation photos, which is the version the app uses. Training stopped after 6 epochs without improvement."
+    )
+    curve_choice_column, _ = st.columns([2, 1])
+    with curve_choice_column:
+        curve_architecture = st.radio("Training curves for", options=list(TRAINING_RUNS.keys()), horizontal=True,
+                                      format_func=lambda name: ARCHITECTURE_DISPLAY_NAMES.get(name, name), key="curve_architecture_choice")
+    loss_column, accuracy_column = st.columns(2, gap="large")
+    with loss_column:
+        st.markdown("**Loss** (lower is better)")
+        st.altair_chart(build_training_curve_chart(curve_architecture, "Loss"), width="stretch")
+    with accuracy_column:
+        st.markdown("**Accuracy**")
+        st.altair_chart(build_training_curve_chart(curve_architecture, "Accuracy"), width="stretch")
+    st.caption(
+        "The grey band is phase 1 and the dashed line is the kept epoch. Training loss keeps falling but validation loss flattens, which is why training "
+        "stopped early and the kept version was used. Points are the epochs recorded in the notebook's printed log."
     )
 
-    st.markdown('<div class="dr-section-title">What stopped the models from memorising</div>', unsafe_allow_html=True)
+    st.markdown("**What stopped the models from memorising**")
     st.markdown(
         '<div class="dr-ingredient-grid">' + "".join(
             f'<div class="dr-ingredient"><div class="dr-ingredient-title">{escape(title)}</div><div class="dr-ingredient-text">{escape(text)}</div></div>'
@@ -903,38 +1099,16 @@ def render_architecture_page(configuration, loaded_models):
         ) + "</div>",
         unsafe_allow_html=True,
     )
-    st.caption("Label smoothing, weight decay, dropout and the cosine schedule were tested together in experiment 6. "
-               "They improved validation QWK and cut the gap between training and validation scores.")
 
-    st.markdown('<div class="dr-section-title">Then the three networks vote</div>', unsafe_allow_html=True)
-    chips = "".join(
-        f'<span class="dr-ensemble-chip" style="background:{ARCHITECTURE_COLOURS.get(name, "#3346A8")}">{escape(ARCHITECTURE_DISPLAY_NAMES.get(name, name))}</span>'
-        + ('<span class="dr-ensemble-sign">+</span>' if position < len(architecture_summaries) - 1 else "")
-        for position, name in enumerate(architecture_summaries)
-    )
-    st.markdown(
-        f'<div class="dr-ensemble-strip">{chips}<span class="dr-ensemble-sign">average</span>'
-        f'<span class="dr-ensemble-result">Final grade and confidence</span></div>',
-        unsafe_allow_html=True,
-    )
+    # ---- Part 3: outcomes --------------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">3. What came out of it</div>', unsafe_allow_html=True)
+    st.dataframe(build_outcome_table(architecture_summaries, test_performance), hide_index=True, width="stretch")
     st.write(
-        "Each network gives its own five probabilities, and the app averages them (soft voting). On the test set this ensemble "
-        "was significantly more accurate than any single network, and when the three disagree the app flags the photo for review. "
-        f"The heat map comes from {grad_cam_name}, the strongest single network on the validation set."
+        "The test photos were opened once, after every choice above was fixed. A small drop from validation to test is normal, because the best epoch was "
+        "picked on validation. The ensemble scored higher than any single network, and McNemar's test confirms the gain is real: on the 550 test photos it "
+        "fixed 28 of ResNet50's mistakes and introduced only 9 new ones (p = 0.0031). The price is about twice the CPU time, 0.37 seconds instead of 0.18 "
+        f"per photo, which is still fast enough for a clinic. The heat map comes from {grad_cam_name}."
     )
-
-    st.markdown('<div class="dr-section-title">Layer by layer, in plain words</div>', unsafe_allow_html=True)
-    st.write(ARCHITECTURE_DESCRIPTIONS.get(chosen_architecture, ""))
-    st.dataframe(build_plain_stage_table(chosen_architecture, chosen_summary), hide_index=True, width="stretch")
-    st.caption("What each part learns is the typical pattern for CNNs: early layers pick up edges, deeper layers combine them into larger structures.")
-    with st.expander("What do these terms mean?"):
-        for term, explanation in GLOSSARY_ITEMS + [
-            ("Epoch", "One full pass through all the training photos."),
-            ("Learning rate", "How big a step the weights take each time they are adjusted. Smaller steps change a network more carefully."),
-            ("Frozen layer", "A layer whose weights are locked, so training does not change it."),
-            ("Fine-tuning", "Continuing to train a pretrained network on new data, usually with a small learning rate."),
-        ]:
-            st.markdown(f"**{term}.** {explanation}")
 
 
 # ---------------------------------------------------------------------------
@@ -1045,19 +1219,25 @@ STEP_REASONS = [
 ]
 
 
-def build_method_comparison_chart():
-    """Each method's mean validation QWK as a dot, with a line from its lowest to highest seed. CLAHE is highlighted."""
-    chart_data = pd.DataFrame(PREPROCESSING_EXPERIMENT_RESULTS)
-    colour = alt.condition(alt.datum.Method == "CLAHE", alt.value("#3346A8"), alt.value("#9AA8C7"))
+def build_option_comparison_chart(option_rows, option_column, chosen_option):
+    """Each option as a dot (mean validation QWK of two seeds) with a line from its lowest to highest seed.
+    The option the notebook chose is drawn in blue, the others in grey. Used for several experiments."""
+    chart_data = pd.DataFrame(option_rows)
+    option_order = [row[option_column] for row in option_rows]
+    colour = alt.condition(alt.datum[option_column] == chosen_option, alt.value("#3346A8"), alt.value("#9AA8C7"))
     seed_range = alt.Chart(chart_data).mark_rule(strokeWidth=3).encode(
-        x=alt.X("Lowest seed:Q", title="Validation QWK (dot = mean of 2 seeds)", scale=alt.Scale(zero=False)),
-        x2="Highest seed:Q", y=alt.Y("Method:N", title=None), color=colour,
+        x=alt.X("Lowest seed:Q", title="Validation QWK (dot = mean of 2 seeds, line = lowest to highest)", scale=alt.Scale(zero=False)),
+        x2="Highest seed:Q", y=alt.Y(f"{option_column}:N", title=None, sort=option_order), color=colour,
     )
     mean_dot = alt.Chart(chart_data).mark_circle(size=160, opacity=1).encode(
-        x="Mean validation QWK:Q", y="Method:N", color=colour,
-        tooltip=["Method", alt.Tooltip("Mean validation QWK:Q", format=".4f"), "Lowest seed", "Highest seed", "Severe recall"],
+        x="Mean validation QWK:Q", y=alt.Y(f"{option_column}:N", sort=option_order), color=colour,
+        tooltip=[option_column, alt.Tooltip("Mean validation QWK:Q", format=".4f"), "Lowest seed", "Highest seed", "Severe recall"],
     )
-    return (seed_range + mean_dot).properties(height=170)
+    return (seed_range + mean_dot).properties(height=max(130, 56 * len(option_rows)))
+
+
+def build_method_comparison_chart():
+    return build_option_comparison_chart(PREPROCESSING_EXPERIMENT_RESULTS, "Method", "CLAHE")
 
 
 def build_local_contrast_chart():
@@ -1109,6 +1289,123 @@ def render_image_preparation_tab(active_case):
     )
 
 
+# ---------------------------------------------------------------------------
+# Augmentation & Balancing tab: training variations of the uploaded photo, and how the policy was decided
+# ---------------------------------------------------------------------------
+# Experiment results copied from the notebook (cells 40 and 41). Every option was trained twice (seeds 42 and 7).
+
+AUGMENTATION_EXPERIMENT_RESULTS = [
+    {"Policy": "No augmentation", "What changes each epoch": "Nothing, the photo is used as it is",
+     "Mean validation QWK": 0.8614, "Lowest seed": 0.8554, "Highest seed": 0.8673, "Train minus validation gap": 0.0731, "Severe recall": 0.483},
+    {"Policy": "Flips + rotation", "What changes each epoch": "Left-right flip 50%, upside-down flip 50%, rotation up to 25 degrees either way",
+     "Mean validation QWK": 0.8718, "Lowest seed": 0.8604, "Highest seed": 0.8832, "Train minus validation gap": 0.0240, "Severe recall": 0.603},
+    {"Policy": "Full", "What changes each epoch": "As above, plus zoom in up to 10% and small brightness, contrast and saturation changes",
+     "Mean validation QWK": 0.8741, "Lowest seed": 0.8612, "Highest seed": 0.8871, "Train minus validation gap": 0.0174, "Severe recall": 0.690},
+    {"Policy": "Full + zoom out", "What changes each epoch": "As Full, but the zoom can also go out by 10%",
+     "Mean validation QWK": 0.8670, "Lowest seed": 0.8536, "Highest seed": 0.8804, "Train minus validation gap": 0.0213, "Severe recall": 0.586},
+]
+CLASS_BALANCE_EXPERIMENT_RESULTS = [
+    {"Loss": "Plain loss", "Mean validation QWK": 0.8799, "Lowest seed": 0.8784, "Highest seed": 0.8813, "Train minus validation gap": 0.0590, "Severe recall": 0.379},
+    {"Loss": "Class-weighted loss", "Mean validation QWK": 0.8718, "Lowest seed": 0.8604, "Highest seed": 0.8832, "Train minus validation gap": 0.0240, "Severe recall": 0.603},
+]
+TRAINING_PHOTOS_PER_GRADE = [1263, 259, 699, 135, 207]
+CLASS_WEIGHTS_IF_USED = [0.406, 1.979, 0.733, 3.797, 2.476]
+
+
+def make_random_training_version(cleaned_photo_rgb, random_generator):
+    """One random version of the cleaned photo, using the same three changes as the chosen
+    'flips_and_rotation' policy in the notebook (cell 25): left-right flip, upside-down flip,
+    and a rotation of up to 25 degrees either way. Returns the new photo and a short description."""
+    new_version = cleaned_photo_rgb
+    changes_made = []
+    if random_generator.random() < 0.5:
+        new_version = cv2.flip(new_version, 1)
+        changes_made.append("mirrored")
+    if random_generator.random() < 0.5:
+        new_version = cv2.flip(new_version, 0)
+        changes_made.append("upside down")
+    rotation_degrees = float(random_generator.uniform(-25, 25))
+    image_height, image_width = new_version.shape[:2]
+    rotation_matrix = cv2.getRotationMatrix2D((image_width / 2, image_height / 2), rotation_degrees, 1.0)
+    new_version = cv2.warpAffine(new_version, rotation_matrix, (image_width, image_height), flags=cv2.INTER_LINEAR, borderValue=(0, 0, 0))
+    changes_made.append(f"rotated {rotation_degrees:+.0f} degrees")
+    return new_version, ", ".join(changes_made)
+
+
+def roll_new_augmentation_versions():
+    st.session_state["augmentation_roll"] = st.session_state.get("augmentation_roll", 0) + 1
+
+
+def render_augmentation_tab(active_case, stage_names):
+    st.markdown('<div class="dr-section-title">Your photo, with training variations</div>', unsafe_allow_html=True)
+    if active_case is None:
+        st.info("Analyse a photo on the Screening tab and random training versions of it will appear here.")
+    else:
+        st.caption(f"Showing {active_case['file_name']} for {display_patient_name(active_case['patient_details'])}, report {active_case['report_id']}.")
+        cleaned_photo = active_case["analysis"]["display_images"]["resized"]
+        # The seed mixes the case ID with a counter, so a case always shows the same versions until you press the button.
+        random_generator = np.random.default_rng([zlib.crc32(active_case["report_id"].encode()), st.session_state.get("augmentation_roll", 0)])
+        image_columns = st.columns(6)
+        image_columns[0].image(cleaned_photo, caption="Cleaned photo (what the models see when grading)", width="stretch")
+        for version_number, image_column in enumerate(image_columns[1:], start=1):
+            augmented_photo, change_description = make_random_training_version(cleaned_photo, random_generator)
+            image_column.image(augmented_photo, caption=f"Version {version_number}: {change_description}", width="stretch")
+        st.button("Show new random versions", on_click=roll_new_augmentation_versions)
+    st.info(
+        "These versions are synthetic. During training, each photo is randomly changed every epoch, in memory only. Nothing is saved, and validation and "
+        "test photos are never augmented, so every reported score comes from real, untouched photos. The photo is still the same eye with the same grade, "
+        "only mirrored or turned, which changes nothing a grader would look at."
+    )
+
+    st.markdown('<div class="dr-section-title">How the augmentation policy was decided</div>', unsafe_allow_html=True)
+    st.write(
+        "Four policies were compared under the same training recipe, with two random seeds each (EfficientNet-B0, notebook experiment 2). "
+        "Overfitting is measured as the gap between training and validation QWK, so a smaller gap means the model memorised less."
+    )
+    chart_column, text_column = st.columns([1.2, 1], gap="large")
+    with chart_column:
+        st.markdown("**Grading quality on validation photos**")
+        st.altair_chart(build_option_comparison_chart(AUGMENTATION_EXPERIMENT_RESULTS, "Policy", "Flips + rotation"), width="stretch")
+    with text_column:
+        st.markdown("**What this shows**")
+        st.write(
+            "Without augmentation the training to validation gap was 0.073, about three times the 0.024 with flips and rotation, so augmentation clearly "
+            "reduced memorising. The full policy scored 0.002 higher on QWK, which is inside the noise between seeds, so the lighter flips and rotation policy "
+            "was chosen because it changes the photos less."
+        )
+    st.markdown("**What each policy changes, and what it achieved**")
+    st.dataframe(
+        pd.DataFrame(AUGMENTATION_EXPERIMENT_RESULTS)[["Policy", "What changes each epoch", "Mean validation QWK", "Train minus validation gap", "Severe recall"]],
+        hide_index=True, width="stretch",
+        column_config={"What changes each epoch": st.column_config.TextColumn(width="large"),
+                       "Mean validation QWK": st.column_config.NumberColumn(format="%.4f"), "Train minus validation gap": st.column_config.NumberColumn(format="%.3f"),
+                       "Severe recall": st.column_config.NumberColumn(format="%.2f")},
+    )
+    st.write(
+        "Each change is realistic: a mirrored right eye looks like a left eye, and patients tilt their heads, so lesions mean the same thing wherever they sit. "
+        "Zoom and colour changes were tested and dropped because they changed the photos more without grading better."
+    )
+
+    st.markdown('<div class="dr-section-title">Class balance</div>', unsafe_allow_html=True)
+    st.write(
+        "Grades are very uneven (see Dataset exploration), so the project tested whether making mistakes on rare grades cost more during training "
+        "(class-weighted loss, experiment 3). The weights below were worked out from the training split only."
+    )
+    balance_table_column, balance_chart_column = st.columns([1, 1.2], gap="large")
+    with balance_table_column:
+        st.markdown("**Loss weight each grade would get**")
+        st.dataframe(pd.DataFrame({"Grade": stage_names, "Training photos": TRAINING_PHOTOS_PER_GRADE, "Loss weight if used": CLASS_WEIGHTS_IF_USED}),
+                     hide_index=True, width="stretch")
+    with balance_chart_column:
+        st.markdown("**Grading quality on validation photos**")
+        st.altair_chart(build_option_comparison_chart(CLASS_BALANCE_EXPERIMENT_RESULTS, "Loss", "Plain loss"), width="stretch")
+    st.write(
+        "Plain loss scored higher (0.880 against 0.872), so class weights were switched off for the final models. The cost is real: Severe recall on the "
+        "validation photos was 0.60 with weights and 0.38 without. Two things soften this. The stratified split keeps Severe in every set, and on the test set "
+        "all 20 Severe photos the ensemble missed were called Moderate or Proliferative, which still leads to a referral."
+    )
+
+
 def main():
     initialise_session_storage()
     st.markdown(INTERFACE_STYLES, unsafe_allow_html=True)
@@ -1118,9 +1415,12 @@ def main():
         st.error(f"The models could not be loaded. {loading_error}")
         st.stop()
 
+    # "About this tool" lives in a pop-up at the top left, so it is one click away on every tab without taking space.
+    with st.popover("About this tool", icon=":material/info:"):
+        render_about_content(configuration)
     render_hero(configuration)
-    screening_tab, dataset_tab, preparation_tab, architecture_tab = st.tabs(
-        ["Screening", "Dataset exploration", "Image Preparation", "How the model works"])
+    screening_tab, dataset_tab, preparation_tab, augmentation_tab, architecture_tab = st.tabs(
+        ["Screening", "Dataset exploration", "Image Preparation", "Augmentation & Balancing", "How the model works"])
     with screening_tab:
         render_patient_and_session_panel(configuration)
         render_upload_area(configuration, loaded_models)
@@ -1136,6 +1436,8 @@ def main():
     with preparation_tab:
         # Tabs run top to bottom, so this reads the case after Screening may have just added one.
         render_image_preparation_tab(find_case_by_id(st.session_state.get("active_case_id")))
+    with augmentation_tab:
+        render_augmentation_tab(find_case_by_id(st.session_state.get("active_case_id")), configuration["stage_names"])
     with architecture_tab:
         render_architecture_page(configuration, loaded_models)
 
