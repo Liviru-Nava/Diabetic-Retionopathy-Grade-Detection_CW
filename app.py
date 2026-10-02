@@ -1780,6 +1780,89 @@ def render_evaluation_tab(configuration):
         )
 
 
+# ---------------------------------------------------------------------------
+# Pipeline diagram, shown at the bottom of the Screening tab
+# ---------------------------------------------------------------------------
+# Top row: how the model was built, one box per tab in the same order as the tabs above.
+# Bottom row: what happens when you press Analyse photo.
+PIPELINE_BUILD_STAGES = [
+    ("1", "Dataset", "3,662 retinal photos", "5 ICDR grades, 70/15/15 split", "Dataset exploration"),
+    ("2", "Preprocessing", "crop, square, circular mask", "CLAHE, resized to 384 x 384", "Image Preparation"),
+    ("3", "Augmentation", "flips and rotation", "training photos only", "Augmentation & Balancing"),
+    ("4", "Model and training", "3 pretrained CNNs", "2-phase transfer learning", "How the model works"),
+    ("5", "Evaluation", "550 unseen test photos", "{qwk_text}, McNemar test", "Evaluation"),
+]
+PIPELINE_APP_STAGES = [
+    ("Upload photo", "any colour fundus photo", "nothing is stored"),
+    ("Same cleaning", "same code as training", "matches the notebook on 50 of 50"),
+    ("Three CNNs", "EfficientNet-B3, B0, ResNet50", "each gives 5 probabilities"),
+    ("Average and checks", "soft vote, review flags", "photo quality warnings"),
+    ("Result", "grade, referral meter", "heat map and PDF report"),
+]
+
+
+def build_pipeline_svg(ensemble_qwk):
+    """Draw the whole project as two rows of five boxes joined by arrows. Built in code so the
+    QWK on the diagram always matches the app's own settings file."""
+    ink, slate, rule, indigo, amber = "#16213E", "#5A6878", "#C9D2DB", "#3346A8", "#E07A2F"
+    box_width, box_height, column_gap, left_margin = 196, 104, 44, 20
+    top_row_y, bottom_row_y = 62, 264
+    svg_width = left_margin * 2 + 5 * box_width + 4 * column_gap
+    parts = [
+        f'<svg width="{svg_width}" height="452" viewBox="0 0 {svg_width} 452" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif">',
+        f'<defs><marker id="pipe-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{slate}"/></marker></defs>',
+        f'<text x="{left_margin}" y="30" font-size="15" font-weight="600" fill="{ink}">A. How the model was built (each box is a tab above, in the same order)</text>',
+        f'<text x="{left_margin}" y="{bottom_row_y + box_height - 14 + 26}" font-size="15" font-weight="600" fill="{ink}">B. What happens when you press Analyse photo (this tab)</text>',
+    ]
+    for column, (number, title, line_one, line_two, tab_name) in enumerate(PIPELINE_BUILD_STAGES):
+        box_x = left_margin + column * (box_width + column_gap)
+        parts.append(f'<rect x="{box_x}" y="{top_row_y}" width="{box_width}" height="{box_height}" rx="12" fill="#FFFFFF" stroke="{rule}" stroke-width="1.3"/>')
+        parts.append(f'<circle cx="{box_x + 24}" cy="{top_row_y + 26}" r="12" fill="{indigo}"/>')
+        parts.append(f'<text x="{box_x + 24}" y="{top_row_y + 31}" text-anchor="middle" font-size="13" font-weight="600" fill="#FFFFFF">{number}</text>')
+        parts.append(f'<text x="{box_x + 44}" y="{top_row_y + 31}" font-size="15.5" font-weight="600" fill="{ink}">{title}</text>')
+        parts.append(f'<text x="{box_x + 16}" y="{top_row_y + 58}" font-size="12.5" fill="{slate}">{line_one}</text>')
+        parts.append(f'<text x="{box_x + 16}" y="{top_row_y + 77}" font-size="12.5" fill="{slate}">{line_two.format(qwk_text=f"QWK {ensemble_qwk:.2f}")}</text>')
+        parts.append(f'<text x="{box_x + 16}" y="{top_row_y + 96}" font-size="11.5" font-weight="600" fill="{indigo}">Tab: {escape(tab_name)}</text>')
+        if column < 4:
+            parts.append(f'<line x1="{box_x + box_width + 4}" y1="{top_row_y + box_height / 2}" x2="{box_x + box_width + column_gap - 6}" y2="{top_row_y + box_height / 2}" stroke="{slate}" stroke-width="1.6" marker-end="url(#pipe-arrow)"/>')
+    for column, (title, line_one, line_two) in enumerate(PIPELINE_APP_STAGES):
+        box_x = left_margin + column * (box_width + column_gap)
+        parts.append(f'<rect x="{box_x}" y="{bottom_row_y}" width="{box_width}" height="{box_height - 14}" rx="12" fill="#FFF7EE" stroke="#F1D3B0" stroke-width="1.3"/>')
+        parts.append(f'<text x="{box_x + 16}" y="{bottom_row_y + 30}" font-size="15.5" font-weight="600" fill="{ink}">{title}</text>')
+        parts.append(f'<text x="{box_x + 16}" y="{bottom_row_y + 55}" font-size="12.5" fill="{slate}">{line_one}</text>')
+        parts.append(f'<text x="{box_x + 16}" y="{bottom_row_y + 74}" font-size="12.5" fill="{slate}">{line_two}</text>')
+        if column < 4:
+            parts.append(f'<line x1="{box_x + box_width + 4}" y1="{bottom_row_y + (box_height - 14) / 2}" x2="{box_x + box_width + column_gap - 6}" y2="{bottom_row_y + (box_height - 14) / 2}" stroke="{slate}" stroke-width="1.6" marker-end="url(#pipe-arrow)"/>')
+    # Dashed links show what the app reuses from the training pipeline.
+    reuse_links = [(1, 1, "same cleaning steps"), (3, 2, "trained weights")]
+    for build_column, app_column, label in reuse_links:
+        start_x = left_margin + build_column * (box_width + column_gap) + box_width / 2
+        end_x = left_margin + app_column * (box_width + column_gap) + box_width / 2
+        mid_y = top_row_y + box_height + 38
+        parts.append(f'<path d="M{start_x} {top_row_y + box_height + 2} V{mid_y} H{end_x} V{bottom_row_y - 4}" fill="none" stroke="{amber}" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#pipe-arrow)"/>')
+        if build_column == app_column:
+            parts.append(f'<text x="{start_x + 10}" y="{(top_row_y + box_height + bottom_row_y) / 2 + 4}" text-anchor="start" font-size="11.5" font-weight="600" fill="{amber}">{label}</text>')
+        else:
+            parts.append(f'<text x="{(start_x + end_x) / 2}" y="{mid_y - 6}" text-anchor="middle" font-size="11.5" font-weight="600" fill="{amber}">{label}</text>')
+    parts.append(
+        f'<rect x="{left_margin}" y="410" width="{svg_width - 2 * left_margin}" height="30" rx="8" fill="#EEF1FB" stroke="#D6DEF3"/>'
+        f'<text x="{svg_width / 2}" y="430" text-anchor="middle" font-size="12.5" fill="{indigo}">Six controlled experiments (26 training runs) decided the preprocessing, augmentation, class balance, freezing, learning rate and regularisation.</text>'
+    )
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def render_pipeline_section(configuration):
+    st.markdown('<div class="dr-section-title">How this result was made: the pipeline</div>', unsafe_allow_html=True)
+    ensemble_qwk = configuration.get("test_set_performance", {}).get("ensemble_qwk", 0)
+    with st.container(border=True):
+        st.image(build_pipeline_svg(ensemble_qwk), width="stretch")
+    st.caption(
+        "Row A is how the model was built. Each box matches a tab above, so you can follow it from left to right. Row B is what happens to your photo "
+        "when you press Analyse photo. The dashed lines show what the app reuses from row A: the same cleaning steps and the trained weights."
+    )
+
+
 def main():
     initialise_session_storage()
     st.markdown(INTERFACE_STYLES, unsafe_allow_html=True)
@@ -1805,6 +1888,7 @@ def main():
             render_case(active_case, configuration)
         else:
             render_landing_sections(configuration)
+        render_pipeline_section(configuration)
     with dataset_tab:
         render_dataset_tab(configuration)
     with preparation_tab:
