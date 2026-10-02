@@ -206,13 +206,10 @@ div:has(> [role="tablist"]) { border-bottom: none !important; }
 [data-testid="stTab"][data-selected="true"] { background: linear-gradient(135deg, #1E2A6E, #3346A8); box-shadow: 0 4px 14px rgba(51,70,168,0.30); }
 [data-testid="stTab"][data-selected="true"] p { color: #FFFFFF; }
 
-/* Banner: a faint retina motif and trust chips */
+/* Banner: a faint retina motif */
 .dr-hero { position: relative; overflow: hidden;
     background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='460' viewBox='0 0 460 460'><g fill='none' stroke='%23ffffff' stroke-opacity='0.11'><circle cx='230' cy='230' r='215'/><circle cx='230' cy='230' r='160'/><circle cx='230' cy='230' r='105'/></g><circle cx='300' cy='200' r='30' fill='%23F2C18D' fill-opacity='0.17'/><path d='M300 200 C 240 150, 170 140, 90 165 M300 200 C 250 245, 180 285, 105 290 M300 200 C 325 140, 325 90, 290 30 M300 200 C 350 235, 395 300, 400 380' stroke='%23ffffff' stroke-opacity='0.13' stroke-width='3' fill='none'/></svg>") right 14% center / auto 170% no-repeat,
         linear-gradient(120deg, #16213E 0%, #1E2A6E 45%, #3346A8 100%); }
-.dr-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.9rem; }
-.dr-chip { border: 1px solid rgba(255,255,255,0.26); background: rgba(255,255,255,0.08); color: #FFFFFF; border-radius: 999px; padding: 0.18rem 0.75rem; font-size: 0.78rem; }
-.dr-chip::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #6FD3A0; margin-right: 0.45rem; }
 .dr-hero-stat { text-align: left; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; padding: 0.6rem 0.95rem; backdrop-filter: blur(2px); }
 
 /* Controls */
@@ -395,7 +392,6 @@ def render_hero(configuration):
                 <h1>Diabetic retinopathy screening</h1>
                 <p>Grades a retinal photo on the five-step international scale and shows where the model looked.
                 It supports a clinician's decision and never replaces it.</p>
-                <div class="dr-chips"><span class="dr-chip">Nothing is stored</span><span class="dr-chip">Runs on a CPU</span><span class="dr-chip">Model {configuration['model_version']}</span></div>
             </div>
             <div class="dr-hero-stats">{stats_markup}</div>
         </div>
@@ -1740,10 +1736,10 @@ def render_evaluation_tab(configuration):
         st.altair_chart(build_model_qwk_chart(), width="stretch")
     with test_column:
         st.markdown("**McNemar's test**")
-        mcnemar_columns = st.columns(3)
+        mcnemar_columns = st.columns(2)
         mcnemar_columns[0].metric("Ensemble fixed", "28")
         mcnemar_columns[1].metric("Ensemble broke", "9")
-        mcnemar_columns[2].metric("p-value", "0.0031")
+        st.metric("p-value", "0.0031", help="The chance of seeing a split this uneven (28 against 9) if the two models were equally good.")
     st.write(
         "The confidence intervals overlap, so they cannot prove the ensemble is better on their own. McNemar's test looks only at the photos where the ensemble and "
         "ResNet50 (the best single model on validation, picked before the test set was opened) disagree: the ensemble fixed 28 of its mistakes and introduced only 9 new ones. "
@@ -1812,6 +1808,7 @@ def main():
     with dataset_tab:
         render_dataset_tab(configuration)
     with preparation_tab:
+        # Tabs run top to bottom, so this reads the case after Screening may have just added one.
         render_image_preparation_tab(find_case_by_id(st.session_state.get("active_case_id")))
     with augmentation_tab:
         render_augmentation_tab(find_case_by_id(st.session_state.get("active_case_id")), configuration["stage_names"])
