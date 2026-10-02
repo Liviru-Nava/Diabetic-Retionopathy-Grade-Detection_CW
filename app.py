@@ -189,6 +189,57 @@ h1, h2, h3, .dr-serif { font-family: 'IBM Plex Serif', Georgia, 'Times New Roman
 .dr-ingredient-title { font-weight: 600; color: #16213E; font-size: 0.93rem; }
 .dr-ingredient-text { font-size: 0.83rem; color: #5A6878; margin-top: 0.2rem; line-height: 1.4; }
 @media (max-width: 760px) { .dr-tl-steps, .dr-ingredient-grid { grid-template-columns: 1fr; } .dr-timeline-row { grid-template-columns: 1fr; } }
+
+/* ===== Interface refinements: pill tabs, retina banner, calmer controls, referral meter ===== */
+[data-testid="stAppViewContainer"] { background: radial-gradient(1100px 480px at 88% -8%, #E4EAFB 0%, rgba(228,234,251,0) 62%), #F5F7FA; }
+[data-testid="stAppViewContainer"] .block-container { padding-top: 3.6rem; }
+[data-testid="stAppDeployButton"] { display: none !important; }
+
+/* Tabs become a floating pill bar. The selected tab is filled, so it is clear where you are. */
+div:has(> [role="tablist"]) { border-bottom: none !important; }
+[role="tablist"] { gap: 0.3rem; background: #FFFFFF; border: 1px solid #E3E9EE; border-radius: 14px; padding: 0.3rem;
+    box-shadow: 0 1px 2px rgba(22,33,62,0.04), 0 8px 24px rgba(22,33,62,0.06); margin-bottom: 0.6rem; }
+.react-aria-SelectionIndicator { display: none !important; }
+[data-testid="stTab"] { height: 2.5rem; border-radius: 10px; padding: 0 1.05rem; background: transparent; transition: background 0.15s ease; }
+[data-testid="stTab"] p { color: #5A6878; font-weight: 500; font-size: 0.95rem; }
+[data-testid="stTab"]:hover { background: #EEF1FB; }
+[data-testid="stTab"][data-selected="true"] { background: linear-gradient(135deg, #1E2A6E, #3346A8); box-shadow: 0 4px 14px rgba(51,70,168,0.30); }
+[data-testid="stTab"][data-selected="true"] p { color: #FFFFFF; }
+
+/* Banner: a faint retina motif and trust chips */
+.dr-hero { position: relative; overflow: hidden;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='460' viewBox='0 0 460 460'><g fill='none' stroke='%23ffffff' stroke-opacity='0.11'><circle cx='230' cy='230' r='215'/><circle cx='230' cy='230' r='160'/><circle cx='230' cy='230' r='105'/></g><circle cx='300' cy='200' r='30' fill='%23F2C18D' fill-opacity='0.17'/><path d='M300 200 C 240 150, 170 140, 90 165 M300 200 C 250 245, 180 285, 105 290 M300 200 C 325 140, 325 90, 290 30 M300 200 C 350 235, 395 300, 400 380' stroke='%23ffffff' stroke-opacity='0.13' stroke-width='3' fill='none'/></svg>") right 14% center / auto 170% no-repeat,
+        linear-gradient(120deg, #16213E 0%, #1E2A6E 45%, #3346A8 100%); }
+.dr-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.9rem; }
+.dr-chip { border: 1px solid rgba(255,255,255,0.26); background: rgba(255,255,255,0.08); color: #FFFFFF; border-radius: 999px; padding: 0.18rem 0.75rem; font-size: 0.78rem; }
+.dr-chip::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #6FD3A0; margin-right: 0.45rem; }
+.dr-hero-stat { text-align: left; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; padding: 0.6rem 0.95rem; backdrop-filter: blur(2px); }
+
+/* Controls */
+[data-testid="stFileUploaderDropzone"] { border: 2px dashed #B8C4E8; background: #F7F9FF; border-radius: 14px; }
+[data-testid="stMetric"] { background: #FFFFFF; border: 1px solid #E3E9EE; border-radius: 12px; padding: 0.7rem 0.95rem; }
+[data-testid="stMetricValue"] { font-family: 'IBM Plex Serif', Georgia, serif; color: #16213E; }
+[data-testid="stPopover"] button { border-radius: 999px; border: 1px solid #D6DEF3; background: #FFFFFF; box-shadow: 0 2px 8px rgba(22,33,62,0.06); }
+[data-testid="stDataFrame"] { border: 1px solid #E3E9EE; border-radius: 12px; overflow: hidden; }
+button[data-testid="stBaseButton-primary"] { background: linear-gradient(135deg, #1E2A6E, #3346A8); border: none; border-radius: 10px; }
+button[data-testid="stBaseButton-primary"]:hover { background: linear-gradient(135deg, #243285, #3D52C4); }
+button[data-testid="stBaseButton-primary"]:disabled { background: #DDE3F2; color: #8793B4; box-shadow: none; }
+[data-testid="stHeader"] { background: transparent; }
+
+/* Referral meter: where the chance of referable DR sits between "not referable", "borderline" and "referable" */
+.dr-meter { margin: 0.1rem 0 1rem 0; }
+.dr-meter-title { font-size: 0.82rem; color: #5A6878; margin-bottom: 0.5rem; }
+.dr-meter-track { position: relative; display: flex; height: 12px; }
+.dr-meter-zone { height: 100%; }
+.dr-meter-zone.dr-zone-low { background: #CFE6DA; border-radius: 999px 0 0 999px; width: 35%; }
+.dr-meter-zone.dr-zone-mid { background: #F4E2BC; width: 30%; }
+.dr-meter-zone.dr-zone-high { background: #EBC4B8; border-radius: 0 999px 999px 0; width: 35%; }
+.dr-meter-marker { position: absolute; top: -5px; width: 6px; height: 22px; border-radius: 3px; background: #16213E; box-shadow: 0 0 0 3px #FFFFFF; }
+.dr-meter-scale { display: grid; grid-template-columns: 35% 30% 35%; margin-top: 0.4rem; font-size: 0.74rem; color: #5A6878; text-align: center; }
+
+/* Heat map colour key */
+.dr-heat-key { height: 8px; border-radius: 4px; margin: 0.15rem 0 0.2rem 0; background: linear-gradient(90deg, #00007F, #0000FF, #00FFFF, #7FFF7F, #FFFF00, #FF0000, #7F0000); }
+.dr-heat-key-labels { display: flex; justify-content: space-between; font-size: 0.74rem; color: #5A6878; margin-bottom: 0.4rem; }
 </style>
 """
 
@@ -344,6 +395,7 @@ def render_hero(configuration):
                 <h1>Diabetic retinopathy screening</h1>
                 <p>Grades a retinal photo on the five-step international scale and shows where the model looked.
                 It supports a clinician's decision and never replaces it.</p>
+                <div class="dr-chips"><span class="dr-chip">Nothing is stored</span><span class="dr-chip">Runs on a CPU</span><span class="dr-chip">Model {configuration['model_version']}</span></div>
             </div>
             <div class="dr-hero-stats">{stats_markup}</div>
         </div>
@@ -415,9 +467,23 @@ def render_severity_ribbon(stage_names, averaged_probabilities, predicted_grade)
     st.markdown(f'<div class="dr-ribbon">{"".join(segment_markup)}</div>', unsafe_allow_html=True)
 
 
+def build_referral_meter_markup(referable_probability):
+    """A bar split into three zones that matches the app's own review rule: under 35% is not referable, 35 to 65% is
+    borderline (flagged for review), over 65% is referable. The dark marker shows where this photo sits."""
+    marker_position = max(0.0, min(1.0, referable_probability)) * 100
+    return (
+        '<div class="dr-meter"><div class="dr-meter-title">Referral meter</div>'
+        '<div class="dr-meter-track"><span class="dr-meter-zone dr-zone-low"></span><span class="dr-meter-zone dr-zone-mid"></span>'
+        '<span class="dr-meter-zone dr-zone-high"></span>'
+        f'<span class="dr-meter-marker" style="left:calc({marker_position:.1f}% - 3px)"></span></div>'
+        '<div class="dr-meter-scale"><span>Not referable</span><span>Borderline, review</span><span>Referable</span></div></div>'
+    )
+
+
 def render_result_summary(analysis):
     grade_colour = SEVERITY_COLOURS[analysis["predicted_grade"]]
     guidance = analysis["guidance"]
+    referral_meter_markup = build_referral_meter_markup(analysis["referable_probability"])
     note_markup = [f'<div class="dr-note dr-review">Please review: {escape(reason)}</div>' for reason in analysis["review_reasons"]]
     note_markup += [f'<div class="dr-note dr-quality">Photo quality: {escape(warning)}</div>' for warning in analysis["quality_warnings"]]
     if not note_markup:
@@ -431,6 +497,7 @@ def render_result_summary(analysis):
                 <div><div class="dr-figure-label">Confidence in this grade</div><div class="dr-figure-value">{analysis['confidence']:.0%}</div></div>
                 <div><div class="dr-figure-label">Chance of referable DR (grade 2 or worse)</div><div class="dr-figure-value">{analysis['referable_probability']:.0%}</div></div>
             </div>
+            {referral_meter_markup}
             <div class="dr-action" style="--grade-colour:{grade_colour}">
                 <div class="dr-action-heading">{URGENCY_DISPLAY_TEXT[guidance['urgency']]}</div>
                 <div class="dr-action-text">{escape(guidance['action'])}</div>
@@ -543,8 +610,15 @@ def render_case(case_record, configuration):
     with image_column:
         with st.container(border=True):
             original_column, heatmap_column = st.columns(2)
-            original_column.image(analysis["display_images"]["resized"], caption="Cleaned photo the models saw", width="stretch")
-            heatmap_column.image(analysis["display_images"]["grad_cam"], caption="Grad-CAM: red areas influenced the grade most", width="stretch")
+            cleaned_photo = analysis["display_images"]["resized"]
+            heat_strength = st.session_state.get(f"heat_strength_{case_record['report_id']}", 100) / 100
+            # Blend from the plain cleaned photo (0%) to the full heat map overlay (100%). Nothing is recomputed.
+            blended_heat_map = cv2.addWeighted(cleaned_photo, 1 - heat_strength, analysis["display_images"]["grad_cam"], heat_strength, 0)
+            original_column.image(cleaned_photo, caption="Cleaned photo the models saw", width="stretch")
+            heatmap_column.image(blended_heat_map, caption="Grad-CAM: red areas influenced the grade most", width="stretch")
+            st.markdown('<div class="dr-heat-key"></div><div class="dr-heat-key-labels"><span>less influence on the grade</span><span>more influence</span></div>', unsafe_allow_html=True)
+            st.slider("Heat map strength", 0, 100, 100, key=f"heat_strength_{case_record['report_id']}", format="%d%%",
+                      help="Slide to 0% to compare the heat map against the plain photo.")
 
     # Preprocessing has its own top-level tab (Image Preparation) and "About this tool" is a pop-up at the top
     # left of the page, so the result ends with one Model breakdown section and then the printable report.
@@ -1406,6 +1480,310 @@ def render_augmentation_tab(active_case, stage_names):
     )
 
 
+# ---------------------------------------------------------------------------
+# Evaluation tab: how the ensemble did on the 550 test photos it had never seen
+# ---------------------------------------------------------------------------
+# Numbers copied from the notebook (cells 53 to 65). The test photos were opened once, after every choice was fixed.
+# Rows are the true grade (expert label), columns are the grade the ensemble predicted (cell 56).
+EVALUATION_CONFUSION_MATRIX = np.array([
+    [265, 5, 1, 0, 0],
+    [4, 34, 16, 0, 2],
+    [2, 12, 129, 2, 5],
+    [0, 0, 8, 9, 12],
+    [0, 2, 13, 3, 26],
+])
+# Headline scores with 95% bootstrap confidence intervals for QWK (cell 54).
+EVALUATION_MODEL_ROWS = [
+    {"Model": "EfficientNet-B3", "QWK": 0.8715, "QWK low": 0.8390, "QWK high": 0.8981, "Accuracy": 0.8055, "Macro F1": 0.6226},
+    {"Model": "EfficientNet-B0", "QWK": 0.8771, "QWK low": 0.8422, "QWK high": 0.9086, "Accuracy": 0.8218, "Macro F1": 0.6498},
+    {"Model": "ResNet50", "QWK": 0.8735, "QWK low": 0.8381, "QWK high": 0.9019, "Accuracy": 0.8073, "Macro F1": 0.6310},
+    {"Model": "Ensemble (soft vote)", "QWK": 0.8998, "QWK low": 0.8728, "QWK high": 0.9253, "Accuracy": 0.8418, "Macro F1": 0.6837},
+]
+MODEL_COLOUR_BY_NAME = {"EfficientNet-B3": "#3346A8", "EfficientNet-B0": "#2F7FC1", "ResNet50": "#7A4FB5", "Ensemble (soft vote)": "#16213E"}
+# The two yes or no questions a clinic asks (cell 57): sensitivity, specificity, positive and negative predictive value, ROC AUC.
+EVALUATION_SCREENING_ROWS = {
+    "referable": [
+        ("EfficientNet-B3", 0.8969, 0.9358, 0.9050, 0.9301, 0.9829), ("EfficientNet-B0", 0.9058, 0.9388, 0.9099, 0.9360, 0.9805),
+        ("ResNet50", 0.9103, 0.9174, 0.8826, 0.9375, 0.9810), ("Ensemble (soft vote)", 0.9283, 0.9419, 0.9159, 0.9506, 0.9851),
+    ],
+    "any_dr": [
+        ("EfficientNet-B3", 0.9606, 0.9742, 0.9745, 0.9600, 0.9974), ("EfficientNet-B0", 0.9785, 0.9779, 0.9785, 0.9779, 0.9980),
+        ("ResNet50", 0.9749, 0.9742, 0.9749, 0.9742, 0.9977), ("Ensemble (soft vote)", 0.9785, 0.9779, 0.9785, 0.9779, 0.9985),
+    ],
+}
+# Accuracy of the ensemble inside each confidence band (cell 65).
+CONFIDENCE_BAND_ROWS = [
+    ("under 50%", 54, 0.481), ("50 to 60%", 52, 0.712), ("60 to 70%", 54, 0.630),
+    ("70 to 80%", 59, 0.763), ("80 to 90%", 86, 0.907), ("90% or more", 245, 0.992),
+]
+
+
+def compute_per_grade_scores(confusion_matrix):
+    """Precision, recall and F1 for each grade, worked out from the confusion matrix itself."""
+    correct_counts = np.diag(confusion_matrix).astype(float)
+    precision = correct_counts / confusion_matrix.sum(axis=0)
+    recall = correct_counts / confusion_matrix.sum(axis=1)
+    f1_score = 2 * precision * recall / (precision + recall)
+    return precision, recall, f1_score
+
+
+def build_confusion_heatmap(confusion_matrix, stage_names, show_percent):
+    """Each square is shaded by the share of that true grade, so the rare grades stay readable.
+    The number printed in it is either the photo count or that share."""
+    heatmap_rows = []
+    for true_index, row_counts in enumerate(confusion_matrix):
+        for predicted_index, photo_count in enumerate(row_counts):
+            share = photo_count / row_counts.sum()
+            heatmap_rows.append({
+                "True grade": stage_names[true_index], "Predicted grade": stage_names[predicted_index], "Photos": int(photo_count),
+                "Share of true grade": float(share), "Label": f"{share:.0%}" if show_percent else str(int(photo_count)),
+            })
+    heatmap_data = pd.DataFrame(heatmap_rows)
+    squares = alt.Chart(heatmap_data).mark_rect(stroke="#FFFFFF", strokeWidth=3, cornerRadius=6).encode(
+        x=alt.X("Predicted grade:N", sort=stage_names, title="Grade the ensemble predicted", axis=alt.Axis(orient="top", labelAngle=0)),
+        y=alt.Y("True grade:N", sort=stage_names, title="True grade (expert label)"),
+        color=alt.Color("Share of true grade:Q", scale=alt.Scale(domain=[0, 1], range=["#F1F4FB", "#3346A8"]), legend=None),
+        tooltip=["True grade", "Predicted grade", "Photos", alt.Tooltip("Share of true grade:Q", format=".1%")],
+    )
+    numbers = alt.Chart(heatmap_data).mark_text(fontSize=15, fontWeight=500).encode(
+        x=alt.X("Predicted grade:N", sort=stage_names), y=alt.Y("True grade:N", sort=stage_names), text="Label:N",
+        color=alt.condition(alt.datum["Share of true grade"] > 0.5, alt.value("#FFFFFF"), alt.value("#16213E")),
+    )
+    return (squares + numbers).properties(height=340)
+
+
+def build_grade_destination_chart(confusion_matrix, true_index, stage_names):
+    """Where the photos of one true grade ended up, with the same severity colours used for results."""
+    row_counts = confusion_matrix[true_index]
+    destination_data = pd.DataFrame({
+        "Predicted grade": stage_names, "Photos": row_counts.astype(int),
+        "Label": [f"{count} ({count / row_counts.sum():.0%})" for count in row_counts],
+    })
+    bars = alt.Chart(destination_data).mark_bar(cornerRadiusEnd=4).encode(
+        x=alt.X("Photos:Q", title="Number of test photos"),
+        y=alt.Y("Predicted grade:N", sort=stage_names, title="Ensemble predicted"),
+        color=alt.Color("Predicted grade:N", scale=alt.Scale(domain=stage_names, range=SEVERITY_COLOURS), legend=None),
+        tooltip=["Predicted grade", "Photos"],
+    )
+    labels = bars.mark_text(align="left", dx=5, color="#16213E").encode(text="Label:N", color=alt.value("#16213E"))
+    return (bars + labels).properties(height=230)
+
+
+def describe_grade_destination(confusion_matrix, true_index, stage_names):
+    """One plain sentence about what happened to the photos of the chosen true grade."""
+    row_counts = confusion_matrix[true_index]
+    total_photos = int(row_counts.sum())
+    exact_count = int(row_counts[true_index])
+    sentence = f"Experts graded {total_photos} test photos as {stage_names[true_index]}. The ensemble named {exact_count} of them exactly ({exact_count / total_photos:.0%}). "
+    if true_index >= 2:
+        referred_count = int(row_counts[2:].sum())
+        sentence += (f"{referred_count} were still sent for referral (grade 2 or worse) and {total_photos - referred_count} were called grade 0 or 1, "
+                     "which would have been missed.")
+    else:
+        cleared_count = int(row_counts[:2].sum())
+        sentence += (f"{cleared_count} were correctly left as not referable and {total_photos - cleared_count} were sent for referral that was not needed.")
+    return sentence
+
+
+def build_per_grade_chart(precision, recall, f1_score, stage_names):
+    score_rows = []
+    for grade_index, stage_name in enumerate(stage_names):
+        score_rows += [
+            {"Grade": stage_name, "Score": "Precision", "Value": float(precision[grade_index])},
+            {"Grade": stage_name, "Score": "Recall", "Value": float(recall[grade_index])},
+            {"Grade": stage_name, "Score": "F1-score", "Value": float(f1_score[grade_index])},
+        ]
+    return alt.Chart(pd.DataFrame(score_rows)).mark_bar(cornerRadiusEnd=3).encode(
+        x=alt.X("Grade:N", sort=stage_names, title=None, axis=alt.Axis(labelAngle=0)),
+        xOffset=alt.XOffset("Score:N", sort=["Precision", "Recall", "F1-score"]),
+        y=alt.Y("Value:Q", title="Score (1.0 is perfect)", scale=alt.Scale(domain=[0, 1])),
+        color=alt.Color("Score:N", sort=["Precision", "Recall", "F1-score"], scale=alt.Scale(range=["#16213E", "#3346A8", "#E07A2F"]),
+                        legend=alt.Legend(title=None, orient="top")),
+        tooltip=["Grade", "Score", alt.Tooltip("Value:Q", format=".3f")],
+    ).properties(height=280)
+
+
+def build_model_qwk_chart():
+    """Each model's test QWK as a dot with its 95% confidence interval as a line."""
+    qwk_data = pd.DataFrame(EVALUATION_MODEL_ROWS)
+    model_order = list(qwk_data["Model"])
+    colour = alt.Color("Model:N", scale=alt.Scale(domain=list(MODEL_COLOUR_BY_NAME), range=list(MODEL_COLOUR_BY_NAME.values())), legend=None)
+    interval = alt.Chart(qwk_data).mark_rule(strokeWidth=3).encode(
+        x=alt.X("QWK low:Q", title="Test QWK (dot) with 95% confidence interval (line)", scale=alt.Scale(domain=[0.83, 0.93])),
+        x2="QWK high:Q", y=alt.Y("Model:N", sort=model_order, title=None, axis=alt.Axis(labelLimit=220)), color=colour)
+    dots = alt.Chart(qwk_data).mark_circle(size=190, opacity=1).encode(
+        x="QWK:Q", y=alt.Y("Model:N", sort=model_order), color=colour,
+        tooltip=["Model", alt.Tooltip("QWK:Q", format=".4f"), alt.Tooltip("QWK low:Q", format=".4f"), alt.Tooltip("QWK high:Q", format=".4f"),
+                 alt.Tooltip("Accuracy:Q", format=".3f"), alt.Tooltip("Macro F1:Q", format=".3f")])
+    labels = alt.Chart(qwk_data).mark_text(dx=14, align="left", color="#16213E").encode(
+        x="QWK high:Q", y=alt.Y("Model:N", sort=model_order), text=alt.Text("QWK:Q", format=".3f"))
+    return (interval + dots + labels).properties(height=210)
+
+
+def build_screening_chart(question_key):
+    screening_data = pd.DataFrame(EVALUATION_SCREENING_ROWS[question_key], columns=["Model", "Sensitivity", "Specificity", "PPV", "NPV", "ROC AUC"])
+    long_data = screening_data.melt(id_vars="Model", value_vars=["Sensitivity", "Specificity", "ROC AUC"], var_name="Measure", value_name="Score")
+    # Dots, not bars: the axis starts at 0.85 so the differences are visible, and a bar on a cut axis would mislead.
+    return alt.Chart(long_data).mark_circle(size=170, opacity=1).encode(
+        x=alt.X("Measure:N", sort=["Sensitivity", "Specificity", "ROC AUC"], title=None, axis=alt.Axis(labelAngle=0, labelFontSize=13)),
+        xOffset=alt.XOffset("Model:N", sort=list(MODEL_COLOUR_BY_NAME)),
+        y=alt.Y("Score:Q", scale=alt.Scale(domain=[0.85, 1.0]), title="Score (axis starts at 0.85)"),
+        color=alt.Color("Model:N", scale=alt.Scale(domain=list(MODEL_COLOUR_BY_NAME), range=list(MODEL_COLOUR_BY_NAME.values())), legend=alt.Legend(title=None, orient="top")),
+        tooltip=["Model", "Measure", alt.Tooltip("Score:Q", format=".4f")],
+    ).properties(height=270)
+
+
+def build_confidence_chart():
+    """Accuracy inside each confidence band. Bands below the app's 60% review line are drawn in warm colours."""
+    band_data = pd.DataFrame(CONFIDENCE_BAND_ROWS, columns=["Confidence", "Photos", "Accuracy"])
+    band_data["Colour"] = band_data["Confidence"].map({"under 50%": SEVERITY_COLOURS[3], "50 to 60%": SEVERITY_COLOURS[2]}).fillna("#3346A8")
+    bars = alt.Chart(band_data).mark_bar(cornerRadiusEnd=4).encode(
+        x=alt.X("Confidence:N", sort=list(band_data["Confidence"]), title="How sure the ensemble was", axis=alt.Axis(labelAngle=0)),
+        y=alt.Y("Accuracy:Q", scale=alt.Scale(domain=[0, 1]), axis=alt.Axis(format="%"), title="Share of photos graded correctly"),
+        color=alt.Color("Colour:N", scale=None), tooltip=["Confidence", "Photos", alt.Tooltip("Accuracy:Q", format=".1%")],
+    )
+    photo_counts = bars.mark_text(dy=-8, color="#16213E").encode(text=alt.Text("Photos:Q", format="d"), color=alt.value("#16213E"))
+    return (bars + photo_counts).properties(height=260)
+
+
+def render_evaluation_tab(configuration):
+    stage_names = configuration["stage_names"]
+    confusion_matrix = EVALUATION_CONFUSION_MATRIX
+    precision, recall, f1_score = compute_per_grade_scores(confusion_matrix)
+    test_performance = configuration.get("test_set_performance", {})
+
+    # ---- Headline ---------------------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">How well does the ensemble grade?</div>', unsafe_allow_html=True)
+    st.write(
+        "Everything on this tab comes from the 550 test photos, which the models never saw during training or tuning and which were opened once, "
+        "after every choice was fixed. Accuracy and loss curves are on the How the model works tab."
+    )
+    headline_columns = st.columns(5)
+    headline_columns[0].metric("Agreement (QWK)", f"{test_performance.get('ensemble_qwk', 0):.3f}", help="Agreement with the expert graders. 1.0 is perfect. Far-off mistakes cost much more than near misses.")
+    headline_columns[1].metric("Exact grade accuracy", f"{test_performance.get('ensemble_accuracy', 0):.1%}")
+    headline_columns[2].metric("Macro F1", f"{test_performance.get('ensemble_macro_f1', 0):.3f}", help="F1 averaged with every grade counting equally. Lower than accuracy because the rare grades are harder.")
+    headline_columns[3].metric("Referable caught", f"{test_performance.get('referable_dr_sensitivity', 0):.1%}")
+    headline_columns[4].metric("Non-referable cleared", f"{test_performance.get('referable_dr_specificity', 0):.1%}")
+    st.caption("QWK 0.900 has a 95% confidence interval of 0.873 to 0.925, from resampling the test set. Above 0.80 is usually read as very strong agreement.")
+
+    # ---- Confusion matrix ----------------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">Where does it get things right and wrong?</div>', unsafe_allow_html=True)
+    matrix_column, reading_column = st.columns([1.35, 1], gap="large")
+    with matrix_column:
+        show_as = st.radio("Show each square as", ["Photo count", "Percent of the true grade"], horizontal=True, key="evaluation_matrix_view")
+        st.altair_chart(build_confusion_heatmap(confusion_matrix, stage_names, show_as != "Photo count"), width="stretch")
+    with reading_column:
+        st.markdown("**How to read it**")
+        st.write(
+            "Rows are what the expert graders said, columns are what the ensemble said, so the diagonal is every correct answer. "
+            "Almost all mistakes sit right next to the diagonal: the ensemble is usually one grade off, rarely far off."
+        )
+        st.write(
+            "Only 1 of 271 healthy eyes was called referable, and no Severe or Proliferative eye was called healthy. "
+            "The weak spot is Severe: of 29 photos, 9 were named exactly and 20 were called Moderate or Proliferative."
+        )
+
+    st.markdown("**Explore one grade**")
+    chosen_grade = st.radio("Pick a true grade and see where its photos went", options=list(range(len(stage_names))), horizontal=True,
+                            format_func=lambda grade_index: stage_names[grade_index], key="evaluation_grade_explorer")
+    destination_column, sentence_column = st.columns([1.4, 1], gap="large")
+    with destination_column:
+        st.altair_chart(build_grade_destination_chart(confusion_matrix, chosen_grade, stage_names), width="stretch")
+    with sentence_column:
+        st.markdown("**What happened**")
+        st.write(describe_grade_destination(confusion_matrix, chosen_grade, stage_names))
+
+    # ---- Precision, recall, F1 -------------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">Precision, recall and F1 for every grade</div>', unsafe_allow_html=True)
+    chart_column, table_column = st.columns([1.4, 1], gap="large")
+    with chart_column:
+        st.altair_chart(build_per_grade_chart(precision, recall, f1_score, stage_names), width="stretch")
+    with table_column:
+        st.dataframe(pd.DataFrame({
+            "Grade": stage_names, "Precision": precision.round(3), "Recall": recall.round(3), "F1-score": f1_score.round(3),
+            "Test photos": confusion_matrix.sum(axis=1),
+        }), hide_index=True, width="stretch")
+    st.write(
+        "Precision asks: when the model names this grade, how often is it right? Recall asks: of all photos truly in this grade, how many did it find? "
+        "F1 balances the two. No DR is almost perfect (0.98) and Moderate is strong (0.81). Severe has decent precision (0.64) but low recall (0.31): it is the "
+        "rarest grade and it sits between two neighbours. Weighting the loss towards it helped Severe recall in the experiments, but lowered overall agreement, so it was not used."
+    )
+
+    # ---- Screening view ---------------------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">The question a clinic actually asks</div>', unsafe_allow_html=True)
+    question_key = st.radio("Question", options=["referable", "any_dr"], horizontal=True, key="evaluation_screening_question",
+                            format_func={"referable": "Does this patient need a specialist? (grade 2 or worse)", "any_dr": "Is there any DR at all? (grade 1 or worse)"}.get)
+    screening_chart_column, plain_numbers_column = st.columns([1.4, 1], gap="large")
+    with screening_chart_column:
+        st.altair_chart(build_screening_chart(question_key), width="stretch")
+    with plain_numbers_column:
+        st.markdown("**In plain numbers (ensemble)**")
+        if question_key == "referable":
+            referable_total, referable_caught = int(confusion_matrix[2:].sum()), int(confusion_matrix[2:, 2:].sum())
+            other_total, other_cleared = int(confusion_matrix[:2].sum()), int(confusion_matrix[:2, :2].sum())
+            st.write(
+                f"Of {referable_total} patients who needed a specialist, {referable_caught} were flagged and {referable_total - referable_caught} were missed. "
+                f"Of {other_total} who did not, {other_cleared} were correctly cleared and {other_total - other_cleared} were sent for a referral that was not needed."
+            )
+        else:
+            st.write("Separating healthy eyes from any sign of DR is the easiest question: the ensemble scores 0.98 on both sensitivity and specificity.")
+        st.caption("Sensitivity is the share of patients with the condition that it finds. Specificity is the share without it that it correctly leaves alone.")
+    st.write(
+        "Missing a patient who needs a specialist is the costlier mistake, which is why the app also flags borderline and low-confidence photos for a person to check. "
+        "Every model scores above 0.98 ROC AUC for referable DR, so the ensemble's advantage here is small but consistent."
+    )
+
+    # ---- Models against the ensemble ------------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">Is the ensemble really better than one network?</div>', unsafe_allow_html=True)
+    comparison_column, test_column = st.columns([1.3, 1], gap="large")
+    with comparison_column:
+        st.altair_chart(build_model_qwk_chart(), width="stretch")
+    with test_column:
+        st.markdown("**McNemar's test**")
+        mcnemar_columns = st.columns(3)
+        mcnemar_columns[0].metric("Ensemble fixed", "28")
+        mcnemar_columns[1].metric("Ensemble broke", "9")
+        mcnemar_columns[2].metric("p-value", "0.0031")
+    st.write(
+        "The confidence intervals overlap, so they cannot prove the ensemble is better on their own. McNemar's test looks only at the photos where the ensemble and "
+        "ResNet50 (the best single model on validation, picked before the test set was opened) disagree: the ensemble fixed 28 of its mistakes and introduced only 9 new ones. "
+        "A split that uneven would happen by chance about 3 times in 1,000, so the gain is real."
+    )
+
+    # ---- Does it know when it is unsure -----------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">Does it know when it is unsure?</div>', unsafe_allow_html=True)
+    confidence_column, confidence_text_column = st.columns([1.3, 1], gap="large")
+    with confidence_column:
+        st.altair_chart(build_confidence_chart(), width="stretch")
+    with confidence_text_column:
+        st.markdown("**Why the app flags some photos**")
+        st.write(
+            "When the ensemble is at least 90% sure (245 photos), it is right 99% of the time. Under 60% sure, accuracy drops to about 60%. "
+            "The app flags a photo when confidence is under 60% or the three networks disagree. That flags 19% of photos and catches 53% of all mistakes."
+        )
+        st.caption("When all three networks agree (84% of photos) the ensemble is right 88% of the time. When they disagree, 64%. Numbers above the bars are test photos in each band.")
+
+    # ---- Honest summary ---------------------------------------------------------------------------------
+    st.markdown('<div class="dr-section-title">The honest summary</div>', unsafe_allow_html=True)
+    strengths_column, limits_column = st.columns(2, gap="large")
+    with strengths_column:
+        st.markdown("**Strong**")
+        st.markdown(
+            "- Very strong agreement with expert graders (QWK 0.90).\n"
+            "- Healthy eyes are recognised almost perfectly, and none of the worst cases were called healthy.\n"
+            "- It catches 93% of patients who need a specialist and clears 94% who do not.\n"
+            "- Its confidence is meaningful, so flagged photos really are the riskier ones."
+        )
+    with limits_column:
+        st.markdown("**Limits**")
+        st.markdown(
+            "- Severe is often named as Moderate or Proliferative, so the exact grade is unreliable there.\n"
+            "- Mild is often called Moderate (16 of 56 photos), the most common single mix-up.\n"
+            "- One dataset, one country, 550 test photos, so intervals are wide and other cameras are untested.\n"
+            "- Not clinically validated, so every result needs a qualified professional."
+        )
+
+
 def main():
     initialise_session_storage()
     st.markdown(INTERFACE_STYLES, unsafe_allow_html=True)
@@ -1419,8 +1797,8 @@ def main():
     with st.popover("About this tool", icon=":material/info:"):
         render_about_content(configuration)
     render_hero(configuration)
-    screening_tab, dataset_tab, preparation_tab, augmentation_tab, architecture_tab = st.tabs(
-        ["Screening", "Dataset exploration", "Image Preparation", "Augmentation & Balancing", "How the model works"])
+    screening_tab, dataset_tab, preparation_tab, augmentation_tab, architecture_tab, evaluation_tab = st.tabs(
+        ["Screening", "Dataset exploration", "Image Preparation", "Augmentation & Balancing", "How the model works", "Evaluation"])
     with screening_tab:
         render_patient_and_session_panel(configuration)
         render_upload_area(configuration, loaded_models)
@@ -1434,12 +1812,13 @@ def main():
     with dataset_tab:
         render_dataset_tab(configuration)
     with preparation_tab:
-        # Tabs run top to bottom, so this reads the case after Screening may have just added one.
         render_image_preparation_tab(find_case_by_id(st.session_state.get("active_case_id")))
     with augmentation_tab:
         render_augmentation_tab(find_case_by_id(st.session_state.get("active_case_id")), configuration["stage_names"])
     with architecture_tab:
         render_architecture_page(configuration, loaded_models)
+    with evaluation_tab:
+        render_evaluation_tab(configuration)
 
 
 main()
