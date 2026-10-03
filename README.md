@@ -45,8 +45,8 @@ In simple terms: the ensemble gives exactly the right grade 84% of the time, and
 | Live app | https://dr-grade-assessment.streamlit.app/ |
 | Video demo | https://youtu.be/Uij00GUm46o |
 | Report (PDF) | *add `report/<filename>.pdf` here once it is exported* |
-| Every figure and table | [`outputs/`](outputs/README.md) |
-| Trained model weights | [`models/`](models/README.md) |
+| Every figure and table | [`outputs/`](outputs/) |
+| Trained model weights | [`models/`](models/) |
 
 ## Repository map
 
