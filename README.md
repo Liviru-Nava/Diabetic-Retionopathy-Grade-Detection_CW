@@ -44,7 +44,7 @@ In simple terms: the ensemble gives exactly the right grade 84% of the time, and
 | Web app | [`app.py`](app.py), run with `streamlit run app.py` |
 | Live app | https://dr-grade-assessment.streamlit.app/ |
 | Video demo | https://youtu.be/Uij00GUm46o |
-| Report (PDF) | *add `report/<filename>.pdf` here once it is exported* |
+| Kaggle Notebook | https://www.kaggle.com/code/livirunavaratna004/cv-cw-lm-navaratna-002-16114793-experiments/ |
 | Every figure and table | [`outputs/`](outputs/) |
 | Trained model weights | [`models/`](models/) |
 
